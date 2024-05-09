@@ -12,6 +12,11 @@ const router = express.Router();
 router
   .route('/')
   .post(auth('manageHome'), validate(homeValidation.createHome),homeController.createHome)
-  
+  .get(auth('getWidgets'), homeController.getwidgets);
 
+  router
+  .route('/:widgetId')
+  .get(auth('getWidgets'), homeController.getWidget)
+  .patch(auth('manageHome'), validate(homeValidation.updateHome),homeController.updateHome)
+  .delete(auth('manageHome'), validate(homeValidation.deleteWidget), homeController.deleteWidget);
 module.exports = router;

@@ -46,6 +46,7 @@
     "prettier"
   ],
   "dependencies": {
+    "@getbrevo/brevo": "^2.1.1",
     "@vonage/server-sdk": "^3.14.0",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
