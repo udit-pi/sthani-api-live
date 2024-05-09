@@ -20,6 +20,7 @@ const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
 const formDataMiddleware = require('./middlewares/formDataMiddleware');
 
+app.use(cors());
 
 const uploadFolder = process.env.UPLOAD_FOLDER || '/var/www/html/media';
 var upload = multer();
