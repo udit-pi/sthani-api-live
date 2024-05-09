@@ -27,6 +27,7 @@ const createHome = {
 
 const updateHome = {
   body: Joi.object().keys({
+    id: Joi.string().custom(objectId),
     placement_id: Joi.string().required(),
     title: Joi.string().required(),
     subtitle: Joi.string().allow(''),

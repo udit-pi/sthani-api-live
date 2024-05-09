@@ -200,7 +200,7 @@ const createProduct = catchAsync(async (req, res) => {
           files.forEach((file) => {
             console.log('Array File:', file.originalFilename);
             const fileName = Date.now() + file.originalFilename;
-            const file_path = path.join(__dirname, uploadFolder, fileName);
+            const file_path = path.join(uploadFolder, fileName);
             fs.renameSync(file.filepath, file_path); // Move file to desired location
 
             const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
@@ -235,7 +235,7 @@ const createProduct = catchAsync(async (req, res) => {
           // Single file uploaded
           console.log('File:', files.originalFilename);
           const fileName = Date.now() + files.originalFilename;
-          const file_path = path.join(__dirname, uploadFolder, fileName);
+          const file_path = path.join(uploadFolder, fileName);
           fs.renameSync(files.filepath, file_path); // Move file to desired location
 
           const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
@@ -433,7 +433,7 @@ const updateProduct = catchAsync(async (req, res) => {
                     console.log('res:' + res);
                     if (res) {
                       const filename = res.file_name;
-                      const imagePath = path.join(__dirname, uploadFolder, filename);
+                      const imagePath = path.join(uploadFolder, filename);
 
                       // Delete the image file from the file system
                       if (imagePath) {
@@ -467,7 +467,7 @@ const updateProduct = catchAsync(async (req, res) => {
                   console.log('res:' + res);
                   if (res) {
                     const filename = res.file_name;
-                    const imagePath = path.join(__dirname, uploadFolder, filename);
+                    const imagePath = path.join(uploadFolder, filename);
 
                     // Delete the image file from the file system
                     if (imagePath) {
@@ -507,7 +507,7 @@ const updateProduct = catchAsync(async (req, res) => {
             if (image) {
               const imageName = image.file_name;
               // console.log(imageName)
-              const imagePath = path.join(__dirname, uploadFolder, imageName);
+              const imagePath = path.join(uploadFolder, imageName);
               // console.log(imagePath);
 
               // Delete the image file from the file system
@@ -541,7 +541,7 @@ const updateProduct = catchAsync(async (req, res) => {
           files.forEach((file) => {
             console.log('Array File:', file.originalFilename);
             const fileName = Date.now() + file.originalFilename;
-            const file_path = path.join(__dirname, uploadFolder, fileName);
+            const file_path = path.join(uploadFolder, fileName);
             fs.renameSync(file.filepath, file_path); // Move file to desired location
 
             const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
@@ -577,7 +577,7 @@ const updateProduct = catchAsync(async (req, res) => {
           // Single file uploaded
           console.log('File:', files.originalFilename);
           const fileName = Date.now() + files.originalFilename;
-          const file_path = path.join(__dirname, uploadFolder, fileName);
+          const file_path = path.join(uploadFolder, fileName);
           fs.renameSync(files.filepath, file_path); // Move file to desired location
 
           const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];

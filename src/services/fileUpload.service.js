@@ -6,7 +6,7 @@ const uploadSingleFile = (file) => {
     //  console.log(file)
     const fileName = Date.now() + file.originalFilename;
     // console.log(fileName)
-    const file_path = path.join(__dirname, uploadFolder, fileName);
+    const file_path = path.join(uploadFolder, fileName);
     // console.log(file_path);
     fs.renameSync(file.filepath, file_path); // Move file to desired location
     return fileName
@@ -18,7 +18,7 @@ const uploadMultipleFile = (files,labels) =>  {
     const images = []
     files.map((file,index) => {
         const fileName = Date.now() + file.originalFilename;
-        const file_path = path.join(__dirname, uploadFolder, fileName);
+        const file_path = path.join(uploadFolder, fileName);
         fs.renameSync(file.filepath, file_path); // Move file to desired location
         
         images.push({value:fileName })
@@ -42,7 +42,7 @@ const uploadMultipleMediaFiles = (files) => {
             files.forEach(file => {
                 console.log('Array File:', file.originalFilename);
                 const fileName = Date.now() + file.originalFilename;
-                const file_path = path.join(__dirname, uploadFolder, fileName);
+                const file_path = path.join(uploadFolder, fileName);
                 fs.renameSync(file.filepath, file_path); // Move file to desired location
                
                 uploadedFiles.push(fileName)
@@ -51,7 +51,7 @@ const uploadMultipleMediaFiles = (files) => {
             // Single file uploaded
             console.log('File:', files.originalFilename);
             const fileName = Date.now() + files.originalFilename;
-            const file_path = path.join(__dirname, uploadFolder, fileName);
+            const file_path = path.join(uploadFolder, fileName);
             fs.renameSync(files.filepath, file_path); // Move file to desired location
                
             uploadedFiles.push(fileName)
