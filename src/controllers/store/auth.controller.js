@@ -14,7 +14,9 @@ async function sendSMS(mobile, otp) {
   try {
     // console.log(mobile)
     if (mobile) {
-      const res = await sendBrevoSMS(mobile,otp);
+      // const res = await sendBrevoSMS(mobile,otp);
+
+
       console.log(res);
       if (res) {
         console.log('Message sent successfully');
@@ -33,14 +35,14 @@ async function sendVerificationEmail(email, otp) {
   // console.log(email)
   if (email) {
     try {
-      // const mailResponse = await mailSender(
-      //   email,
-      //   'Verification Email',
-      //   `<h1>Please confirm your OTP</h1>
-      //    <p>Here is your OTP code: ${otp}</p>`
-      // );
+      const mailResponse = await mailSender(
+        email,
+        'Verification Email',
+        `<h1>Please confirm your OTP</h1>
+         <p>Here is your OTP code: ${otp}</p>`
+      );
 
-      const mailResponse = await sendBrevoEmail(email,otp)
+      // const mailResponse = await sendBrevoEmail(email,otp)
       console.log('Email sent successfully: ', mailResponse);
       return true;
     } catch (error) {
