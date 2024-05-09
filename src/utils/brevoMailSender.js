@@ -43,7 +43,7 @@ const sendBrevoSMS = async (mobile, otp) => {
     let apiInstance = new SibApiV3Sdk.TransactionalSMSApi();
 
     let apiKey = apiInstance.authentications['apiKey'];
-     apiKey.apiKey = process.env.BREVO_API_SECRET;
+     apiKey.apiKey = process.env.BREVO_API;
 
     let sendTransacSms = new SibApiV3Sdk.SendTransacSms();
 
