@@ -15,16 +15,47 @@ const categorySchema = mongoose.Schema(
       unique: true,
       trim: true,
     },
-    code: {
+    // code: {
+    //   type: String,
+    //   required: true,
+    //   trim: true,
+    // },
+
+    icon:{
       type: String,
-      required: true,
-      trim: true,
+      required: false,
+      default: '',
+      // trim: true,
+    
     },
+    description: {
+      type: String,
+      required: false,
+      trim: true,
+   
+   
+  
+
+  },
+  parent_category: {
+    type: String,
+    required: false,
+    trim: true,
+},
+
     banner: {
       type: String,
-      required: true,
-      trim: true,
+      required: false,
+      // trim: true,
+      default: '',
+
+
+
     },
+    slide_show :[{
+      type: String, 
+      required: true
+    }],
   
     meta_title: {
       type: String,
@@ -51,6 +82,10 @@ const categorySchema = mongoose.Schema(
     timestamps: true,
   }
 );
+
+
+
+
 
 // add plugin that converts mongoose to json
 categorySchema.plugin(toJSON);
