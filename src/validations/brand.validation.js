@@ -6,7 +6,7 @@ const createBrand = {
     name: Joi.string().required(),
     // slug: Joi.string().required(),
     description: Joi.string().required(),
-    // logo: Joi.string().required(),
+    logo: Joi.string().optional(),
   //   images: Joi.array().items(
   //     Joi.object({
   //         label: Joi.string(),
