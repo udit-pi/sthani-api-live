@@ -6,6 +6,7 @@ const fs = require('fs');
 const { uploadSingleFile, uploadMultipleFile } = require('./fileUpload.service');
 const generateSlug = require('./generateSlug');
 const formidable = require('formidable');
+const uploadFolder = process.env.UPLOAD_FOLDER || '/var/www/html/media';
 
 /**
  * Create a user
@@ -13,14 +14,27 @@ const formidable = require('formidable');
  * @returns {Promise<User>}
  */
 const createBrand = async (req) => {
-  //  console.log(req.files.logo)
+   console.log(req.files.logo)
   //  console.log(req.body)
   // const labelCount = req.files['images[]'].length
   // console.log(req.body.labels);
-  const logo = uploadSingleFile(req.files.logo);
-  const images = uploadMultipleFile(req.files['images[]'], req.body.labels);
 
-  // console.log(images)
+if(req.files.logo){
+
+  var logo = uploadSingleFile(req.files.logo);
+}
+if(req.files['images[]']){
+
+  var images = uploadMultipleFile(req.files['images[]'], req.body.labels);
+}
+
+if(req.files['slide_show[]']){
+  var slide_show = uploadMultipleFile(req.files['slide_show[]'])
+}
+if(slide_show){
+
+  var slideShowValues = slide_show.map(item => item.value);
+}
 
   const slug = generateSlug(req.body.name);
 
@@ -28,8 +42,9 @@ const createBrand = async (req) => {
     name: req.body.name,
     description: req.body.description,
     website: req.body.website,
-    logo: logo,
-    images: images,
+    slide_show:slideShowValues,
+    logo: logo&&logo,
+    images:images&& images,
     slug: slug,
   });
   const newBrand = brand.save();
@@ -108,14 +123,14 @@ const removeImageById = async (brandId, imageIdToRemove) => {
 const updateBrandById = async (brandId, req) => {
   // delete image from database and uploads directory
 
-  if (req.body.deletedImages?.length > 0) {
+  if (req.body.deletedImages) {
     try {
       req.body.deletedImages?.map(async (imageId) => {
         const image = await getImageById(brandId, imageId);
 
         const imageName = image.value;
         // console.log(imageName)
-        const imagePath = path.join(__dirname, '../uploads', imageName);
+        const imagePath = path.join(uploadFolder, imageName);
         // console.log(imagePath);
 
         // Delete the image file from the file system
@@ -145,6 +160,7 @@ const updateBrandById = async (brandId, req) => {
 
   //  console.log(req.files)
   
+ 
  
   if (req.files.logo) {
     logo = uploadSingleFile(req.files.logo);
@@ -182,8 +198,31 @@ const updateBrandById = async (brandId, req) => {
     const updatedImagesArray = await addImagesToArray(brandId,images)
     // console.log(updatedImagesArray)
   }
+// console.log( "Hello" ,req.files['slide_show[]'])
 
 
+
+if(!brand.slide_show){
+  brand.slide_show=[]
+}else{
+  brand.slide_show=req.body.slide_show
+} 
+  if (req.files['slide_show[]']) {
+   
+
+    var slide_showImage = uploadSingleFile(req.files['slide_show[]']);
+    
+    // Check if slide_show array exists in updateBody
+    if (!brand.slide_show || !Array.isArray(brand.slide_show)) {
+        brand.slide_show = []; // Initialize slide_show as an array if it doesn't exist
+    }
+
+    // Add the new slide_showImage to the slide_show array
+    brand.slide_show.push(slide_showImage);
+}
+
+   
+    
   
 
   const slug = generateSlug(req.body.name);
@@ -234,7 +273,7 @@ const updateBrandById = async (brandId, req) => {
 
 const deleteBrandById = async (brandId) => {
   const brand = await getBrandById(brandId);
-  // console.log(brand)
+  // console.log( "Hello brand",brand)
 
   if (!brand) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Brand not found');
