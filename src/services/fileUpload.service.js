@@ -1,8 +1,8 @@
 const path = require('path');
 const fs = require('fs');
-const multer = require('multer');
-const uploadFolder = process.env.UPLOAD_FOLDER || '/var/www/html/media';
 
+
+const uploadFolder = process.env.UPLOAD_FOLDER || '/var/www/html/media';
 
 
 const uploadSingleFile = (file) => {
@@ -51,7 +51,8 @@ const uploadMultipleMediaFiles = (files) => {
             files.forEach(file => {
                 console.log('Array File:', file.originalFilename);
                 const fileName = Date.now() + file.originalFilename;
-                const file_path = path.join(__dirname, uploadFolder, fileName);
+                const file_path = path.join(uploadFolder, fileName);
+
                 fs.renameSync(file.filepath, file_path); // Move file to desired location
                
                 uploadedFiles.push(fileName)
@@ -60,7 +61,8 @@ const uploadMultipleMediaFiles = (files) => {
             // Single file uploaded
             console.log('File:', files.originalFilename);
             const fileName = Date.now() + files.originalFilename;
-            const file_path = path.join(__dirname,uploadFolder, fileName);
+            const file_path = path.join(uploadFolder, fileName);
+
             fs.renameSync(files.filepath, file_path); // Move file to desired location
                
             uploadedFiles.push(fileName)
