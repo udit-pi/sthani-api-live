@@ -43,6 +43,12 @@ const updateHome = {
                slideShowBrand: Joi.string().custom(objectId),
                category: Joi.string().custom(objectId),
                product: Joi.string().custom(objectId),
+               products: Joi.array().items(
+                Joi.object({
+                  label: Joi.string(),
+                  value: Joi.string(),
+                })
+              ).allow(''),
             })
             .optional(),
               

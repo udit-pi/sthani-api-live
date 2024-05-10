@@ -5,6 +5,8 @@ const uploadFolder = process.env.UPLOAD_FOLDER || "/var/www/html/media";
 
 const saveHome = async (req) => {
   try {
+
+
     const home = new Home();
 
     home.title = req.body.title;
@@ -13,16 +15,22 @@ const saveHome = async (req) => {
     home.items = req.body.items;
     home.widget_type = req.body.widget_type;
 
-    const item_count = req.body.items.length;
-    if (item_count > 0) {
-      for (let i = 0; i < item_count; i++) {
-        if (req.files[`items[${i}][image]`]) {
-          const image = uploadSingleFile(req.files[`items[${i}][image]`]);
-          console.log(image);
-          home.items[i].image = image;
+  
+      const item_count = req.body.items.length;
+      if (item_count > 0) {
+        for (let i = 0; i < item_count; i++) {
+          if (req.files[`items[${i}][image]`]) {
+            const image = uploadSingleFile(req.files[`items[${i}][image]`]);
+            console.log(image);
+            home.items[i].image = image;
+          }
         }
       }
-    }
+    
+    
+
+
+  
 
     const result = await home.save();
 
