@@ -4,93 +4,41 @@ const multer = require('multer');
 const uploadFolder = process.env.UPLOAD_FOLDER || '/var/www/html/media';
 
 
-// const uploadSingleFile = (file) => {
-
-//     const fileName = Date.now() + file.originalFilename;
-//     // console.log(fileName)
-//     const file_path = path.join(__dirname, uploadFolder, fileName);
-//     fs.renameSync(file.filepath, file_path); // Move file to desired location
-  
-//     return fileName
-
-// }
 
 const uploadSingleFile = (file) => {
+    //  console.log(file)
     const fileName = Date.now() + file.originalFilename;
+    // console.log(fileName)
     const file_path = path.join(uploadFolder, fileName);
-    
-    // Copy the file to the desired location
-    fs.copyFileSync(file.filepath, file_path);
+    // console.log(file_path);
+    fs.renameSync(file.filepath, file_path); // Move file to desired location
+    return fileName
 
-    // Delete the original file
-    fs.unlinkSync(file.filepath);
-
-    return fileName;
 }
 
-
-
-
-// const uploadMultipleFile = (files) =>  {
-//         // console.log(files);
-//         const images = []
-//         files.map((file,index) => {
-//             const fileName = Date.now() + file.originalFilename;
-//             const file_path = path.join( uploadFolder, fileName);
-//             fs.copyFileSync(file.filepath, file_path); // Move file to desired location
-//             fs.unlinkSync(file.filepath);
-//             images.push({value:fileName })
-           
-//         })
-    
-//         // labels.map((lab,index) => {
-//         //     images[index].label = lab 
-//         // })
-//         return images;
-//     }
-    
-
-
-const uploadMultipleFile = (files) => {
-    const images = [];
-    
-    // Ensure files is always treated as an array
+const uploadMultipleFile = (files,labels) =>  {
+    // console.log(files);
+    const images = []
     if (!Array.isArray(files)) {
         files = [files];
     }
     
-    files.forEach((file, index) => {
+    files.forEach((file,index) => {
         const fileName = Date.now() + file.originalFilename;
         const file_path = path.join(uploadFolder, fileName);
-        fs.copyFileSync(file.filepath, file_path); // Move file to desired location
-        fs.unlinkSync(file.filepath);
-        images.push({ value: fileName });
-    });
-
-    return images;
-};
-
-
-
-
-
-// const uploadMultipleFile = (files,labels) =>  {
-//     // console.log(files);
-//     const images = []
-//     files.map((file,index) => {
-//         const fileName = Date.now() + file.originalFilename;
-//         const file_path = path.join(__dirname, '../uploads', fileName);
-//         fs.renameSync(file.filepath, file_path); // Move file to desired location
+        fs.renameSync(file.filepath, file_path); // Move file to desired location
         
-//         images.push({value:fileName })
+        images.push({value:fileName })
        
-//     })
+    })
 
-//     labels.map((lab,index) => {
-//         images[index].label = lab 
-//     })
-//     return images;
-// }
+    labels.map((lab,index) => {
+        images[index].label = lab 
+    })
+    return images;
+}
+
+
 
 const uploadMultipleMediaFiles = (files) => {
    
