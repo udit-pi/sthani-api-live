@@ -30,7 +30,7 @@ const uploadMultipleFile = (files,labels) =>  {
         
         images.push({value:fileName })
        
-    })
+    })   
 
     labels.map((lab,index) => {
         images[index].label = lab 
