@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const { toJSON, paginate } = require('./plugins');
+const { ref } = require('joi');
+const { Category } = require('.');
 
 const categorySchema = mongoose.Schema(
   {
@@ -38,9 +40,8 @@ const categorySchema = mongoose.Schema(
 
   },
   parent_category: {
-    type: String,
-    required: false,
-    trim: true,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category'
 },
 
     banner: {

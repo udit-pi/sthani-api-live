@@ -210,15 +210,16 @@ if(!brand.slide_show){
   if (req.files['slide_show[]']) {
    
 
-    var slide_showImage = uploadSingleFile(req.files['slide_show[]']);
-    
+    var slide_showImage = uploadMultipleFile(req.files['slide_show[]']);
+    var slideShowValues = slide_showImage.map(item => item.value);
     // Check if slide_show array exists in updateBody
     if (!brand.slide_show || !Array.isArray(brand.slide_show)) {
         brand.slide_show = []; // Initialize slide_show as an array if it doesn't exist
     }
 
     // Add the new slide_showImage to the slide_show array
-    brand.slide_show.push(slide_showImage);
+    // brand.slide_show.push(slide_showImage);
+    brand.slide_show=[... brand.slide_show, ...slideShowValues]
 }
 
    
@@ -281,7 +282,7 @@ const deleteBrandById = async (brandId) => {
   const logo = brand.logo;
 
   // Construct the path to the image file
-  const imagePath = path.join(__dirname, '../uploads', logo);
+  const imagePath = path.join(uploadFolder, logo);
 
   // Delete the image file from the file system
   fs.unlink(imagePath, (err) => {
@@ -294,7 +295,7 @@ const deleteBrandById = async (brandId) => {
   const images = brand.images;
   images.map((image) => {
     const imageName = image.value;
-    const imagePath = path.join(__dirname, '../uploads', imageName);
+    const imagePath = path.join(uploadFolder, imageName);
 
     // Delete the image file from the file system
     fs.unlink(imagePath, (err) => {
