@@ -5,6 +5,7 @@ const { Category } = require('../models');
 const ApiError = require('../utils/ApiError');
 const generateSlug = require('./generateSlug');
 const { uploadSingleFile, uploadMultipleFile } = require('./fileUpload.service');
+const uploadFolder = process.env.UPLOAD_FOLDER || '/var/www/html/media';
 
 
 const createCategory = async (req) => {
@@ -85,32 +86,43 @@ const updateCategoryById = async (req,categoryId, updateBody) => {
     updateBody.icon = category.icon
   }
 
+ var length=0
+
+
+  if(!updateBody.slide_show){
  
-
+    category.slide_show=[]
+  } 
+  
+// console.log( "hello length",req.files.slide_show.length)
+      
   if (req.files['slide_show[]']) {
-   
-
-    var slide_showImage = uploadSingleFile(req.files['slide_show[]']);
-    
+ var slide_showImage = uploadMultipleFile(req.files['slide_show[]']);
+var slideShowValues = slide_showImage.map(item => item.value);
     // Check if slide_show array exists in updateBody
     if (!updateBody.slide_show || !Array.isArray(updateBody.slide_show)) {
         updateBody.slide_show = []; // Initialize slide_show as an array if it doesn't exist
     }
 
     // Add the new slide_showImage to the slide_show array
-    updateBody.slide_show.push(slide_showImage);
+   
+    
+  
+    // updateBody.slide_show.push(slideShowValues);
+    //  updateBody.slide_show=slideShowValues
+    updateBody.slide_show = [...updateBody.slide_show, ...slideShowValues];
 }
 
-if(!updateBody.slide_show){
-  category.slide_show=[]
-}    
-    
-    
+// else{
+//   updateBody.slide_show = [...updateBody.slide_show]
+// }
+
+
     
     
     Object.assign(category, updateBody);
     
-    console.log(category)
+    console.log( "ajaja", category)
    
  
  
@@ -131,8 +143,8 @@ const deleteCategoryById = async (categoryId) => {
   const iconName = category.icon;
   // Construct the path to the image file
 
-  const imagePath =imageName&& path.join(__dirname, '../uploads', imageName);
-  const iconPath =iconName&& path.join(__dirname, '../uploads', iconName);
+  const imagePath =imageName&& path.join(uploadFolder, imageName);
+  const iconPath =iconName&& path.join(uploadFolder, iconName);
 
 
   // Delete the image file from the file system
