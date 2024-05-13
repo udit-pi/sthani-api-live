@@ -26,12 +26,12 @@ const homeSchema = mongoose.Schema(
       trim: true,
     },
     items: {
-      type: [
+      type: [   
         {
           _id: false,
           image: {
             type: String,
-            required: true,
+            required: false,
           },
           description: {
             type: String,
@@ -58,6 +58,25 @@ const homeSchema = mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             required: false,
           },
+          product: {
+            type: mongoose.Schema.Types.ObjectId,
+            required: false,
+          },
+          products: {
+            type: [
+              {
+                  label: {
+                    type: String,
+                    required: false,
+                  },
+                  value: {
+                    type: String,
+                    required: false,
+                  },
+                },
+          ],
+          required: false
+          }
         },
       ],
     },

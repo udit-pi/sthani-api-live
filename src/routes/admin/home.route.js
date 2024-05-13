@@ -11,7 +11,7 @@ const router = express.Router();
 
 router
   .route('/')
-  .post(auth('manageHome'), validate(homeValidation.createHome),homeController.createHome)
+  .post(auth('manageHome'),homeController.createHome)
   .get(auth('getWidgets'), homeController.getwidgets);
 
   router

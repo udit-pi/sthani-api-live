@@ -3,6 +3,7 @@ const express = require('express');
 const authRoute = require('./authRoute');
 const productRoute = require('./productRoute');
 const customerRoute = require('./customerRoute');
+const homeRoute = require('./homeRoute');
 
 const config = require('../../config/config');
 
@@ -22,6 +23,10 @@ const defaultRoutes = [
   {
     path: '/customer',
     route: customerRoute
+  },
+  {
+    path: '/home',
+    route: homeRoute
   }
   
 ];
