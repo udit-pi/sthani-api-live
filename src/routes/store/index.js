@@ -27,7 +27,7 @@ const defaultRoutes = [
   },
 
   {
-    path: '/brands',
+    path: '/brand',
     route: brandRoute
   },
   {
