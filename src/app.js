@@ -20,15 +20,22 @@ const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
 const formDataMiddleware = require('./middlewares/formDataMiddleware');
 
+
+
+const uploadFolder = process.env.UPLOAD_FOLDER || '/var/www/html/media';
 var upload = multer();
 
 
 const app = express();
 
+app.use(cors());
+
 if (config.env !== 'test') {
   app.use(morgan.successHandler);
   app.use(morgan.errorHandler);
 }
+
+
 
 // set security HTTP headers
 app.use(helmet());
@@ -43,7 +50,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // app.use(upload.any()); 
 app.use(formDataMiddleware);
-app.use('/uploads',express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads',express.static(uploadFolder));
 
 // sanitize request data
 app.use(xss());

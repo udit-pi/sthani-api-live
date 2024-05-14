@@ -5,9 +5,12 @@ node_modules
 yarn-error.log
 
 # Environment varibales
-.env*
+.env
 !.env*.example
 
 # Code coverage
 coverage
 src/uploads
+
+package-lock.json
+yarn.lock
