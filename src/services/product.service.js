@@ -1,5 +1,5 @@
 const httpStatus = require('http-status');
-const { Product, Brand } = require('../models');
+const { Product, Brand, Category } = require('../models');
 const ApiError = require('../utils/ApiError');
 const path = require('path');
 const fs = require('fs');
@@ -46,6 +46,7 @@ const createProduct = async (productBody) => {
       // sales_count to be calculated
   
     })
+   
     if(typeof productBody.additional_descriptions !== 'undefined' && productBody.additional_descriptions.length > 0) {
       productBody.additional_descriptions.map((doc,index) => {
           add_descriptions.push({label:doc.label,value: doc.value })
@@ -60,6 +61,18 @@ const createProduct = async (productBody) => {
   product.additional_descriptions = add_descriptions;
   product.additional_properties = add_properties;
      product.save();
+    
+     await Promise.all(cats?.map(async (cat) => {
+    
+          const category = await Category.findById(cat);
+          if (category) {
+              category.products.push(product._id);
+              await category.save(); // Save the category to persist changes
+          } else {
+              console.log(`Category with id ${cat} not found`);
+          }
+    
+  }));
     
     return product
 

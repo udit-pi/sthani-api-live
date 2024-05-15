@@ -5,6 +5,6 @@ const productValidation = require('../../validations/product.validation');
 const productController = require('../../controllers/product.controller');
 const router = express.Router();
 
-router.get('/getProducts', validate(productValidation.getProducts), productController.getProducts);
+router.get('/getProducts', productController.getProducts);
 
 module.exports = router;

@@ -1,7 +1,7 @@
 const httpStatus = require("http-status");
 const catchAsync = require("../../utils/catchAsync");
 
-const MEDIA_URL = 'http://localhost:3500/uploads/'; 
+const MEDIA_URL = process.env.MEDIA_URL;
 
 const config = require("../../config/config");
 const {
@@ -12,17 +12,18 @@ const {
   ProductMedia,
 } = require("../../models");
 
-const setProduct = (product,productImage,brand) => {
+const setProduct = (product, productImage, brand) => {
   try {
     let productData = [];
     productData.push({
+      id: product.id,
       name: product.name,
       image: productImage?.file_name
         ? MEDIA_URL + productImage.file_name
         : "No Image",
       brand: {
         name: brand.name,
-        logo: MEDIA_URL+ brand.logo,
+        logo: MEDIA_URL + brand.logo,
       },
       link: {
         destination: "product",
@@ -34,12 +35,11 @@ const setProduct = (product,productImage,brand) => {
         discounted_price: product.discounted_price,
       },
     });
-    return productData
-  } catch(err) {
-    throw err
+    return productData;
+  } catch (err) {
+    throw err;
   }
- 
-}
+};
 
 const getwidgets = catchAsync(async (req, res) => {
   // const authHeader = req.headers['authorization'];
@@ -67,7 +67,7 @@ const getwidgets = catchAsync(async (req, res) => {
                 tag: item.tag,
                 brand: {
                   name: brand.name,
-                  logo: MEDIA_URL + brand.logo,
+                  logo: brand.logo ? MEDIA_URL + brand.logo : "",
                 },
                 cta: {
                   link: {
@@ -94,9 +94,11 @@ const getwidgets = catchAsync(async (req, res) => {
           await Promise.all(
             widget.items?.map(async (item) => {
               const category = await Category.findById(item.category);
-
+              // console.log('category',category)
               categories.push({
-                image: item.image ? MEDIA_URL + item.image : MEDIA_URL + category.banner,
+                image: item.image
+                  ? MEDIA_URL + item.image
+                  : "",
                 name: category.name,
                 tag: item.tag,
 
@@ -128,7 +130,7 @@ const getwidgets = catchAsync(async (req, res) => {
 
               brands.push({
                 name: brand.name,
-                logo: MEDIA_URL + brand.logo,
+                logo: brand.log ? MEDIA_URL + brand.logo: "",
                 link: {
                   destination: "brand",
                   id: item.brand,
@@ -179,7 +181,8 @@ const getwidgets = catchAsync(async (req, res) => {
               //     discounted_price: product.discounted_price,
               //   },
               // });
-              products = setProduct(product,productImage,brand)
+              const result = setProduct(product, productImage, brand);
+              products.push(result);
             })
           );
           const data = {
@@ -194,98 +197,85 @@ const getwidgets = catchAsync(async (req, res) => {
 
         // featured categories
         if (widget.widget_type === "featured_categories") {
-            let categories = [];
-            let products = [];
-          
-  
-            await Promise.all(
-              widget.items?.map(async (item) => {
-                const category = await Category.findById(item.category);
-                 
-               
-                await Promise.all(item.products?.map(async (product) => {
-                    const prod = await Product.findById(product.value);
-                    const brand = await Brand.findById(prod.brand_id);
-
-                    const productImage = await ProductMedia.findOne({
-                        product_id: product.value,
-                        title: "Media",
-                      }).exec();
-                    // products.push({
-                    //     name: prod.name,
-                    //     image: productImage?.file_name
-                    //     ? productImage.file_name
-                    //     : "No Image",
-                    //     brand: {
-                    //         name: brand.name,
-                    //         logo: brand.logo,
-                    //       },
-                    //       link: {
-                    //         destination: "product",
-                    //         id: product.value,
-                    //       },
-                    //       price: {
-                    //         amount: prod.price,
-                    //         original_amount: prod.cost,
-                    //         discounted_price: prod.discounted_price,
-                    //       },
-
-                    // })
-                    products = setProduct(prod,productImage,brand)
+          let categories = [];
+          let updatedProducts = [];
+        
+          console.log(widget);
+          await Promise.all(
+            widget.items?.map(async (item) => {
+              const category = await Category.findById(item.category);
+              let products = []; // Initialize products array for each category
+        
+              await Promise.all(
+                item.products?.map(async (product) => {
+                  const prod = await Product.findById(product.value);
+                  const brand = await Brand.findById(prod.brand_id);
+        
+                  const productImage = await ProductMedia.findOne({
+                    product_id: product.value,
+                    title: "Media",
+                  }).exec();
+        
+                  const result = setProduct(prod, productImage, brand);
+                  updatedProducts.push(result);
+                  products.push(result); 
                 })
-            )
-                categories.push({
-                    image: item.image ? MEDIA_URL + item.image : MEDIA_URL + category.banner,
-                    name: category.name,
-                    tag: item.tag,
-                    products: products
-    
-                    
-                  });
-              })
-            );
-            const data = {
-              widget_position: widget.placement_id,
-              widget_type: widget.widget_type,
-              widget_title: widget.title,
-              widget_subtitle: widget.subtitle,
-              categories: categories,
-            };
-            return data;
-          }
+              );
+        
+              categories.push({
+                image: item.image ? MEDIA_URL + item.image : "",
+                name: category.name,
+                tag: item.tag,
+                products: products, // Assign the category-specific products list
+              });
+            })
+          );
+        
+          const data = {
+            widget_position: widget.placement_id,
+            widget_type: widget.widget_type,
+            widget_title: widget.title,
+            widget_subtitle: widget.subtitle,
+            categories: categories,
+          };
+        
+          return data;
+        }
+        
 
         //   featured brand
 
         if (widget.widget_type === "featured_brand") {
           let brandObject = {};
-          let products = []
-          console.log(widget);
-         
+          let products = [];
+
           await Promise.all(
             widget.items?.map(async (item) => {
               const brand = await Brand.findById(item.brand);
-              brandObject = {
-              id: brand._id,
-              name: brand.name,
-              tag: item.tag,
-              description: item.description,
-              logo: brand.logo,
-              banner: brand.banner ? brand.banner : 'NO banner'
-            }
-            await Promise.all(item.products?.map(async (product) => {
-              const prod = await Product.findById(product.value);
-              const brand = await Brand.findById(prod.brand_id);
-
-              const productImage = await ProductMedia.findOne({
-                  product_id: product.value,
-                  title: "Media",
-                }).exec();
-            
-              products = setProduct(prod,productImage,brand)
-            
-          }))
-        
              
+              brandObject = {
+                id: brand._id,
+                name: brand.name,
+                tag: item.tag,
+                description: item.description,
+                logo: brand.logo ? MEDIA_URL + brand.logo: "",
+                banner: brand.banner ? MEDIA_URL + brand.banner : "",
+              };
+              await Promise.all(
+                item.products?.map(async (product) => {
+                  const prod = await Product.findById(product.value);
+               
+                  const brand = await Brand.findById(prod.brand_id);
+                 
+                  const productImage = await ProductMedia.findOne({
+                    product_id: product.value,
+                    title: "Media",
+                  }).exec();
+
+                  const result = setProduct(prod, productImage, brand);
+                  products.push(result);
+                })
+              );
             })
           );
           const data = {
@@ -294,11 +284,10 @@ const getwidgets = catchAsync(async (req, res) => {
             widget_title: widget.title,
             widget_subtitle: widget.subtitle,
             brand: brandObject,
-            products: products
+            products: products,
           };
-           return data;
+          return data;
         }
-
       })
     );
 

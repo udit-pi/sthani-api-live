@@ -6,7 +6,7 @@ const productController = require('../../controllers/product.controller');
 const router = express.Router();
 
 router
-  .get('/getProducts', validate(productValidation.getProducts), productController.getProducts);
+  .get('/getProducts',  productController.getProducts);
 
 
 router

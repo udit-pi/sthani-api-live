@@ -73,6 +73,7 @@ const homeSchema = mongoose.Schema(
                     type: String,
                     required: false,
                   },
+                  _id: false,
                 },
           ],
           required: false

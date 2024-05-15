@@ -18,11 +18,19 @@ const createHome = {
                slideShowBrand: Joi.string().custom(objectId),
                category: Joi.string().custom(objectId),
                product: Joi.string().custom(objectId),
+               products: Joi.array().items(
+                Joi.object({
+                  label: Joi.string(),
+                  value: Joi.string(),
+                  _id: Joi.string().allow('')
+                })
+              ).allow(''),
             })
             .optional(),
               
         ),
   }),
+  allowUnknown: true
 };
 
 const updateHome = {
@@ -47,6 +55,7 @@ const updateHome = {
                 Joi.object({
                   label: Joi.string(),
                   value: Joi.string(),
+                  _id: Joi.string().allow('')
                 })
               ).allow(''),
             })
@@ -54,6 +63,7 @@ const updateHome = {
               
         ),
   }),
+  allowUnknown: true
 };
 
 const deleteWidget = {
