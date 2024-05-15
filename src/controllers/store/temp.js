@@ -15,7 +15,7 @@ function register({email, mobile, otp}) {
                     generate_token();
                     return {
                         status: true,
-                        message: "Registratino successful"
+                        message: "Registration successful"
                     };
                 }
 
