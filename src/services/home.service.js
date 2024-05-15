@@ -1,5 +1,7 @@
 const { Home } = require("../models");
 const { uploadSingleFile } = require("./fileUpload.service");
+const path = require('path');
+const fs = require('fs');
 
 const uploadFolder = process.env.UPLOAD_FOLDER || "/var/www/html/media";
 
@@ -122,14 +124,14 @@ const deleteWidgetById = async (widgetId) => {
           widget.items[i].image !== null
         ) {
           const imagePath = path.join(
-            __dirname,
+            
             uploadFolder,
             widget.items[i].image
           );
           fs.unlink(imagePath, (err) => {
             if (err) {
               console.error("Error deleting image:", err);
-              return res.status(500).json({ error: "Failed to delete image" });
+              // return res.status(500).json({ error: "Failed to delete image" });
             }
           });
         }

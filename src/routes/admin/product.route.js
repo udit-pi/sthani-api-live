@@ -5,8 +5,6 @@ const productValidation = require('../../validations/product.validation');
 const productController = require('../../controllers/product.controller');
 const router = express.Router();
 
-router
-  .get('/getProducts',  productController.getProducts);
 
 
 router
@@ -15,7 +13,7 @@ router
   .get(auth('getProducts'), productController.getProducts);
 router
   .route('/:productId')
-  .get(auth('getProducts'), validate(productValidation.getProduct), productController.getProduct)
+  .get(auth('getProduct'), validate(productValidation.getProduct), productController.getProduct)
   .patch(auth('manageProducts'), validate(productValidation.updateProduct),productController.updateProduct)
   .delete(auth('manageProducts'), validate(productValidation.deleteProduct), productController.deleteProduct);
 
