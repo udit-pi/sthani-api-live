@@ -8,6 +8,8 @@ const homeRoute = require('./homeRoute');
 const config = require('../../config/config');
 const brandRoute=require('../store/brandsRoute')
 const SearchRoute=require('../store/searchRoute')
+const FilterRoute=require('../store/filter.Route')
+
 
 const router = express.Router();
 
@@ -27,7 +29,6 @@ const defaultRoutes = [
     path: '/category',
     route: categoryRoute
   },
-
   {
     path: '/brand',
     route: brandRoute
@@ -35,6 +36,10 @@ const defaultRoutes = [
   {
     path: '/search',
     route: SearchRoute
+  },
+  {
+    path: '/filters',
+    route: FilterRoute
   },
   {
     path: '/customer',
