@@ -171,4 +171,6 @@ productSchema.pre('save', function(next) {
 productSchema.plugin(toJSON);
 productSchema.plugin(paginate);
 
-module.exports = mongoose.model('Product',productSchema);
+const Product = mongoose.models.Product || mongoose.model('Product', productSchema);
+
+module.exports = Product
