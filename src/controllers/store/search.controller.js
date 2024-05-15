@@ -17,9 +17,9 @@ const pick = require("../../utils/pick");
 
 const getSearch=catchAsync(async(req,res)=>{
     const query = pick(req.query, ['sort', 'page']);
-const{searchKeyword}=req.body
+const{search_keyword}=req.body
 const { sort } = query;
-if (!searchKeyword) {
+if (!search_keyword) {
     return res.status(400).send({ message: 'Search keyword is required' });
 }
 
@@ -27,10 +27,10 @@ if (!searchKeyword) {
 
 
 const productQuery = {
-    name: { $regex: searchKeyword, $options: 'i' }
+    name: { $regex: search_keyword, $options: 'i' }
 };
   // Search for products by brand name
-  const brands = await brandModel.find({ name: { $regex: searchKeyword, $options: 'i' } });
+  const brands = await brandModel.find({ name: { $regex: search_keyword, $options: 'i' } });
   const brandIds = brands.map(brand => brand._id);
   const brandQuery = {
       brand_id: { $in: brandIds }
@@ -38,7 +38,7 @@ const productQuery = {
 
 
 //seacrh for category also
-  const categories = await categoryModel.find({ name: { $regex: searchKeyword, $options: 'i' } });
+  const categories = await categoryModel.find({ name: { $regex: search_keyword, $options: 'i' } });
   const categoryIds = categories.map(category => category._id);
   const categoryQuery = {
       categories: { $in: categoryIds}
@@ -90,7 +90,7 @@ logo:product.brand_id.logo
     meta: {
         current_page: pageNumber,
         total: product.length, 
-        search_keyword:searchKeyword,
+        search_keyword:search_keyword,
         query_params: {
             sort,
             page: pageNumber
