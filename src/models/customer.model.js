@@ -37,13 +37,24 @@ const customerSchema = mongoose.Schema(
       dob: {
         type: String,
         trim: true,
-        required: true
+        required: false
       },
       gender: {
         type: String,
         trim: true,
         required: false
-      }
+      },
+      addresses: [{
+        name: String, 
+        mobile: String, 
+        address_line: String,
+        city: String, 
+        state: String, 
+        postal_code: String, 
+        landmark: String, 
+        address_type: { type: String, enum: ['Home', 'Office'] },
+        default: Boolean 
+      }],
     
   },
   {
