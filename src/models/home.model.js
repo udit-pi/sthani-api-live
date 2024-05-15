@@ -1,13 +1,13 @@
-const mongoose = require('mongoose');
-const { toJSON, paginate } = require('./plugins');
-const generateSlug = require('../services/generateSlug');
+const mongoose = require("mongoose");
+const { toJSON, paginate } = require("./plugins");
+const generateSlug = require("../services/generateSlug");
 
 const homeSchema = mongoose.Schema(
   {
     placement_id: {
       type: String,
       required: true,
-    //   unique: true,
+      //   unique: true,
       trim: true,
     },
     title: {
@@ -26,11 +26,12 @@ const homeSchema = mongoose.Schema(
       trim: true,
     },
     items: {
-      type: [
+      type: [   
         {
+          _id: false,
           image: {
             type: String,
-            required: true,
+            required: false,
           },
           description: {
             type: String,
@@ -38,44 +39,55 @@ const homeSchema = mongoose.Schema(
           },
           tag: {
             type: String,
-            required: false
+            required: false,
           },
-          link: {
-            type: {
-                destination: {
-                    type: String,
-                    required: true
-                },
-                id: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    required: true
-                }
-            },
-            required: false
+
+          destination: {
+            type: String,
+            required: false,
+          },
+          id: {
+            type: mongoose.Schema.Types.ObjectId,
+            required: false,
           },
           brand: {
             type: mongoose.Schema.Types.ObjectId,
-            required: false
+            required: false,
           },
-          categories: {
+          category: {
             type: mongoose.Schema.Types.ObjectId,
-            required: false
+            required: false,
+          },
+          product: {
+            type: mongoose.Schema.Types.ObjectId,
+            required: false,
+          },
+          products: {
+            type: [
+              {
+                  label: {
+                    type: String,
+                    required: false,
+                  },
+                  value: {
+                    type: String,
+                    required: false,
+                  },
+                },
+          ],
+          required: false
           }
         },
       ],
-     
     },
-   
   },
   {
     timestamps: true,
   }
 );
 
-
-
 // add plugin that converts mongoose to json
 homeSchema.plugin(toJSON);
 homeSchema.plugin(paginate);
 
-module.exports = mongoose.model('Home', homeSchema);
+module.exports = mongoose.model("Home", homeSchema);

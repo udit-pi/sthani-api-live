@@ -8,27 +8,23 @@ const { tokenService, authService } = require('../../services');
 const mailSender = require('../../utils/mailSender');
 const config = require('../../config/config');
 const jwt = require('jsonwebtoken');
+const { sendBrevoEmail, sendBrevoSMS } = require('../../utils/brevoMailSender');
 
 async function sendSMS(mobile, otp) {
   try {
     // console.log(mobile)
     if (mobile) {
-      // const vonage = new Vonage({
-      //   apiKey: process.env.VONAGE_API_KEY,
-      //   apiSecret: process.env.VONAGE_API_SECRET,
-      // });
-      // const from = 'Vonage APIs';
-      // const to = mobile;
-      // const text = `Verifcation Code: ${otp}. Valid for 1 minute `;
+      // const res = await sendBrevoSMS(mobile,otp);
 
-      // const res = await vonage.sms.send({ to, from, text });
-      const res =true
+
+      console.log(res);
       if (res) {
         console.log('Message sent successfully');
         return true;
       }
+      return false;
     }
-    return false;
+   
   } catch (err) {
     console.log('There was an error sending the messages.');
     console.error(err);
@@ -45,6 +41,8 @@ async function sendVerificationEmail(email, otp) {
         `<h1>Please confirm your OTP</h1>
          <p>Here is your OTP code: ${otp}</p>`
       );
+
+      // const mailResponse = await sendBrevoEmail(email,otp)
       console.log('Email sent successfully: ', mailResponse);
       return true;
     } catch (error) {
@@ -59,7 +57,7 @@ const sendOTP = async (email, mobile) => {
     // Check if user with email/mobile already exists
     // Uncomment and adapt this part if needed
     let checkOtp;
-    console.log(mobile);
+    // console.log(mobile);
 
     if (email) checkOtp = await OTP.findOne({ email }).exec();
     if (mobile) checkOtp = await OTP.findOne({ mobile }).exec();
@@ -85,22 +83,13 @@ const sendOTP = async (email, mobile) => {
 
         if (await sendVerificationEmail(email, otp)) {
           await OTP.create(otpPayload);
+          return { status: 202, message: 'Otp sent successfully' };
         }
       }
-      // if (mobile) {
-      //   otpPayload = { mobile, otp };
-      //   console.log(otpPayload);
-
-      //   const res = await sendSMS(mobile, otp);
-      //   console.log('res' + res);
-
-      //    if(res) {
-      //     await OTP.create(otpPayload);
-      //    }
-      // }
+    
       if (mobile) {
         otpPayload = { mobile, otp };
-        console.log('otpPayload:', otpPayload);
+        // console.log('otpPayload:', otpPayload);
       
         const res = await sendSMS(mobile, otp);
         console.log('sendSMS result:', res);
@@ -108,24 +97,30 @@ const sendOTP = async (email, mobile) => {
         if (res) {
           await OTP.create(otpPayload);
           console.log('OTP record created successfully');
-        } else {
-          console.log('mobile number is null. Skipping SMS and OTP creation.');
-        }
-      }
+          return { status: 202, message: 'Otp sent successfully' };
+         
+        } 
 
-      return { status: 202, message: 'Otp sent successfully' };
+        throw new Error("Failed to send OTP");
+      } 
+      
+     
     } else
       return {
         status: 429,
         message: 'Too Many Requests: Please wait at least 60 seconds before requesting another OTP',
       };
   } catch (error) {
+    // console.log('inside catch')
     throw {
       status: 504,
       message: 'Gateway timeout: Could not send OTP, please try again',
     };
   }
 };
+
+
+
 
 const verifyOTP = async (otp, mobile, email) => {
   let response;
@@ -189,7 +184,7 @@ const register = catchAsync(async (req, res) => {
       // console.log('user does not exist');
       if (!otp) {
         result = await sendOTP(email, mobile);
-        // console.log(result)
+        console.log('result', result)
         if (result.status === 202) {
           res.status(202).json({ status: result.status, message: result.message });
         }

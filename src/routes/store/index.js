@@ -3,6 +3,8 @@ const express = require('express');
 const authRoute = require('./authRoute');
 const productRoute = require('./productRoute');
 const categoryRoute=require("./categoryRoute")
+const customerRoute = require('./customerRoute');
+const homeRoute = require('./homeRoute');
 const config = require('../../config/config');
 const brandRoute=require('../store/brandsRoute')
 const SearchRoute=require('../store/searchRoute')
@@ -27,7 +29,6 @@ const defaultRoutes = [
     path: '/category',
     route: categoryRoute
   },
-
   {
     path: '/brand',
     route: brandRoute
@@ -39,8 +40,15 @@ const defaultRoutes = [
   {
     path: '/filters',
     route: FilterRoute
+  },
+  {
+    path: '/customer',
+    route: customerRoute
+  },
+  {
+    path: '/home',
+    route: homeRoute
   }
-
 ];
 
 
