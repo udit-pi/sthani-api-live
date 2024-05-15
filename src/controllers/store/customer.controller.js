@@ -277,7 +277,7 @@ const customerId=payload.sub
   try {
    
     const addressId = req.params.address_Id; // Assuming the address ID is passed in the URL parameters
-    const { name, mobile, address_line, city, state, postal_code, landmark, address_type } = req.body;
+    const { name, mobile, address_line, city, state, postal_code, landmark, address_type,default:isDefault} = req.body;
 
     // Fetch the customer
     const customer = await Customer.findById(customerId);
@@ -292,10 +292,7 @@ const customerId=payload.sub
       return res.status(404).json({ status: 404, message: 'Address not found' });
     }
 
-    // Check if the address to update is the default address
-    if (addressToUpdate.default && customer.addresses.length === 1) {
-      return res.status(400).json({ status: 400, message: 'Cannot update default address as it is the only address' });
-    }
+   console.log("The default is"+isDefault)
 
     // Update the address fields
     addressToUpdate.name = name;
@@ -307,8 +304,13 @@ const customerId=payload.sub
     addressToUpdate.landmark = landmark;
     addressToUpdate.address_type = address_type;
 
+
+
+
+
+
     // Save the updated customer
-    await customer.save();
+    // await customer.save();
 
     res.status(200).json({ status: 200, message: 'Address updated successfully', data: addressToUpdate });
   } catch (error) {

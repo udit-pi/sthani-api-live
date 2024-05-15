@@ -11,19 +11,19 @@ const router = express.Router();
 
 router.patch('/update-profile', authenticateToken, customerController.updateProfile); 
 
-router.get("/", customerController.getDetails)
+router.get("/",authenticateToken, customerController.getDetails)
 
 router
 .route("/address")
-.post(customerController.addAddress)
-.get(customerController.getAllAddress)
+.post(authenticateToken,customerController.addAddress)
+.get(authenticateToken,customerController.getAllAddress)
 
 
 
 router
 .route("/address/:address_Id")
-.delete(customerController.deleteCustomerAddress)
-.patch(customerController.updateCustomerAddress)
+.delete(authenticateToken,customerController.deleteCustomerAddress)
+.patch( authenticateToken, customerController.updateCustomerAddress)
 
 module.exports = router;
 
