@@ -25,5 +25,27 @@ router
 .delete(authenticateToken,customerController.deleteCustomerAddress)
 .patch( authenticateToken, customerController.updateCustomerAddress)
 
-module.exports = router;
+router
+.route("/wishlist")
+.get(authenticateToken,customerController.getWishlist)
 
+router
+.route("/wishlist/:product_Id")
+.post(authenticateToken,customerController.addProductToWishlist)
+.delete(authenticateToken,customerController.removeProductFromWishlist)
+
+
+
+router
+.route("/favorite-brands")
+.get(authenticateToken,customerController.getFavBrand)
+
+
+router
+.route("/favorite-brands/:brand_id")
+.post(authenticateToken,customerController.addFavBrand)
+.delete(authenticateToken,customerController.deleteFavBrands)
+
+
+
+module.exports = router;

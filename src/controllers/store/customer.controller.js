@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const config = require('../../config/config');
 const { updateProfileValidation } = require('../../validations/store/profile.validation');
 const customerModel = require('../../models/customer.model');
-
+const Product = require('../../models/product.model');
 
 const updateProfile = catchAsync(async (req, res) => {
 
@@ -292,7 +292,14 @@ const customerId=payload.sub
       return res.status(404).json({ status: 404, message: 'Address not found' });
     }
 
-   console.log("The default is"+isDefault)
+   if(isDefault==false){
+    return res.status(404).json({ status: 404, message: 'default address not set as false' });
+   }
+   if(isDefault==true&&addressToUpdate.default==true){
+    return res.status(404).json({ status: 404, message: 'default address are already true' });
+  }
+
+ 
 
     // Update the address fields
     addressToUpdate.name = name;
@@ -303,14 +310,21 @@ const customerId=payload.sub
     addressToUpdate.postal_code = postal_code;
     addressToUpdate.landmark = landmark;
     addressToUpdate.address_type = address_type;
+  //  addressToUpdate.isDefault=customer.addresses.default
 
 
 
-
-
+  if (isDefault==true) {
+    addressToUpdate.default = true;
+    customer.addresses.forEach(address => {
+      if (address._id.toString() !== addressId) {
+        address.default = false;
+      }
+    });
+  }
 
     // Save the updated customer
-    // await customer.save();
+    await customer.save();
 
     res.status(200).json({ status: 200, message: 'Address updated successfully', data: addressToUpdate });
   } catch (error) {
@@ -321,7 +335,349 @@ const customerId=payload.sub
 
 
 
+const addProductToWishlist = async (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ error: 'Token not provided' });
+  } 
+  const payload = jwt.verify(token, config.jwt.secret);
+
+
+const customerId=payload.sub
+  try {
+
+    const productId = req.params.product_Id; 
+
+    // Fetch the customer
+    const customer = await Customer.findById(customerId);
+
+    if (!customer) {
+      return res.status(404).json({ status: 404, message: 'Customer not found' });
+    }
+
+    
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ status: 404, message: 'Product not found' });
+    }
+
+   
+    if (customer.wishlist.includes(productId)) {
+      return res.status(400).json({ status: 400, message: 'Product is already in the wishlist' });
+    }
+
+    
+    customer.wishlist.push(productId);
+
+    
+    
+
+
+    await customer.populate({
+      path: 'wishlist',
+      populate: {
+        path: 'brand',
+        model: 'Brand'
+      }
+    }).execPopulate();
+
+  
+      const productlist = await Product.findById(productId).populate('brand_id');
+
+      const wishlistProduct = {
+        id: productlist._id,
+        name: productlist.name,
+        image: productlist.image, 
+        brand: {
+          name: productlist.brand_id.name,
+          logo: productlist.brand_id.logo 
+        },
+        price: {
+          currency: 'AED', 
+          amount: productlist.price,
+          original_amount: productlist.discounted_price || productlist.price,
+          discount_percentage: productlist.discounted_price ? Math.round(((productlist.price - productlist.discounted_price) / productlist.price) * 100) : 0
+        }
+      };
+ 
+
+
+
+await customer.save();
+
+
+
+    res.status(200).json({ status: 200, message: 'Product added to wishlist successfully', data: wishlistProduct });
+  } catch (error) {
+    console.error('Error adding product to wishlist:', error);
+    res.status(500).json({ status: 500, message: 'Internal Server Error' });
+  }
+};
+
+
+const getWishlist = async (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ error: 'Token not provided' });
+  } 
+  const payload = jwt.verify(token, config.jwt.secret);
+
+
+const customerId=payload.sub
+  try {
+    
+
+    // Fetch the customer
+    const customer = await Customer.findById(customerId).populate({
+      path: 'wishlist',
+      populate: {
+        path: 'brand',
+        model: 'Brand'
+      }
+    });
+
+    if (!customer) {
+      return res.status(404).json({ status: 404, message: 'Customer not found' });
+    }
+
+    const wishlist = await Promise.all(customer.wishlist.map(async (productId) => {
+      const product = await Product.findById(productId).populate('brand_id');
+      console.log(product)
+      return {
+        id: product._id,
+        name: product.name,
+        image: product.image, 
+        brand: {
+          name: product.brand_id.name,
+          logo: product.brand_id.logo 
+        },
+        price: {
+          currency: 'AED', 
+          amount: product.price,
+          original_amount: product.discounted_price || product.price,
+          discount_percentage: product.discounted_price ? Math.round(((product.price - product.discounted_price) / product.price) * 100) : 0
+        }
+      };
+    }));
+
+    res.status(200).json({
+      status: 200,
+      message: 'Wishlist retrieved successfully.',
+      wishlist
+    });
+  } catch (error) {
+    console.error('Error retrieving wishlist:', error);
+    res.status(500).json({ status: 500, message: 'Internal Server Error' });
+  }
+};
+
+
+
+const removeProductFromWishlist = async (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ error: 'Token not provided' });
+  } 
+  const payload = jwt.verify(token, config.jwt.secret);
+
+
+const customerId=payload.sub
+  try {
+ 
+    const productId = req.params.product_Id; 
+
+    // Fetch the customer
+    const customer = await Customer.findById(customerId);
+
+    if (!customer) {
+      return res.status(404).json({ status: 404, message: 'Customer not found' });
+    }
+
+    // Check if the product is in the wishlist
+    const productIndex = customer.wishlist.indexOf(productId);
+    if (productIndex === -1) {
+      return res.status(404).json({ status: 404, message: 'Product not found in wishlist' });
+    }
+
+    // Remove the product from the wishlist
+    customer.wishlist.splice(productIndex, 1);
+
+    // Save the updated customer document
+    await customer.save();
+
+    res.status(200).json({
+      status: 200,
+      message: 'Product removed from wishlist successfully.'
+    });
+  } catch (error) {
+    console.error('Error removing product from wishlist:', error);
+    res.status(500).json({ status: 500, message: 'Internal Server Error' });
+  }
+};
+
+//fav brands contollers
+
+
+const addFavBrand=catchAsync(async (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ error: 'Token not provided' });
+  } 
+  const payload = jwt.verify(token, config.jwt.secret);
+
+
+const customerId=payload.sub
+
+try {
+
+  const brandId = req.params.brand_id; 
+
+  // Fetch the customer
+  const customer = await Customer.findById(customerId);
+
+  if (!customer) {
+    return res.status(404).json({ status: 404, message: 'Customer not found' });
+  }
+
+  // Check if the brand already exists in the favoriteBrands array
+  if (customer.favoriteBrands.includes(brandId)) {
+    return res.status(400).json({ status: 400, message: 'Brand already in favorite list' });
+  }
+
+  // Add the brand to the favoriteBrands array
+  customer.favoriteBrands.push(brandId);
+
+
+
+  // Populate the favorite brands with the brand details
+  await customer.populate({
+    path: 'favoriteBrands',
+    select: 'name logo'
+  }).execPopulate();
+
+
+
+  // Format the response
+  const favoriteBrands = customer.favoriteBrands.map(brand => ({
+    id: brand._id,
+    name: brand.name,
+    logo: brand.logo
+  }));
+
+    // Save the updated customer document
+  await customer.save();
+  res.status(200).json({
+    status: 200,
+    message: 'Brand added to followed list successfully.',
+    brands: favoriteBrands
+  });
+} catch (error) {
+  console.error('Error adding brand to favorite list:', error);
+  res.status(500).json({ status: 500, message: 'Internal Server Error' });
+}
+
+
+
+
+})
+
+
+const getFavBrand=catchAsync(async (req, res) => {
+
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ error: 'Token not provided' });
+  } 
+  const payload = jwt.verify(token, config.jwt.secret);
+
+
+const customerId=payload.sub
+
+try {
+ 
+
+  // Fetch the customer
+  const customer = await Customer.findById(customerId).populate({
+    path: 'favoriteBrands',
+    select: 'name logo'
+  });
+
+  if (!customer) {
+    return res.status(404).json({ status: 404, message: 'Customer not found' });
+  }
+
+  // Format the response
+  const favoriteBrands = customer.favoriteBrands.map(brand => ({
+    id: brand._id,
+    name: brand.name,
+    logo: brand.logo
+  }));
+
+  res.status(200).json({
+    status: 200,
+    message: 'Brands retrieved successfully.',
+    brands: favoriteBrands
+  });
+} catch (error) {
+  console.error('Error retrieving favorite brands:', error);
+  res.status(500).json({ status: 500, message: 'Internal Server Error' });
+}
+
+
+
+})
+
+
+const deleteFavBrands=catchAsync(async (req, res) => {
+
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ error: 'Token not provided' });
+  } 
+  const payload = jwt.verify(token, config.jwt.secret);
+
+
+const customerId=payload.sub
+
+try {
+
+  const brandId = req.params.brand_id; 
+
+  // Fetch the customer
+  const customer = await Customer.findById(customerId);
+
+  if (!customer) {
+    return res.status(404).json({ status: 404, message: 'Customer not found' });
+  }
+
+  // Check if the brand exists in the customer's favorite brands
+  const brandIndex = customer.favoriteBrands.indexOf(brandId);
+  if (brandIndex === -1) {
+    return res.status(404).json({ status: 404, message: 'Brand not found in favorite list' });
+  }
+
+  // Remove the brand from the favorite brands list
+  customer.favoriteBrands.splice(brandIndex, 1);
+  await customer.save();
+
+  res.status(200).json({
+    status: 200,
+    message: 'Brand removed from favorite list successfully.'
+  });
+} catch (error) {
+  console.error('Error removing favorite brand:', error);
+  res.status(500).json({ status: 500, message: 'Internal Server Error' });
+}
+
+})
 
 module.exports = {
     updateProfile,getDetails,addAddress
-,getAllAddress,deleteCustomerAddress,updateCustomerAddress}
+,getAllAddress,deleteCustomerAddress,updateCustomerAddress ,addProductToWishlist,getWishlist ,removeProductFromWishlist,addFavBrand,getFavBrand ,deleteFavBrands}
