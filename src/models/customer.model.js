@@ -44,6 +44,16 @@ const customerSchema = mongoose.Schema(
         trim: true,
         required: false
       },
+      wishlist: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product'
+    }],
+    favoriteBrands: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Brand'
+  }],
+
+
       addresses: [{
         name: String, 
         mobile: String, 
