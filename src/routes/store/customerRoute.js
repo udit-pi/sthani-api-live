@@ -14,11 +14,13 @@ router.patch('/update-profile', authenticateToken, customerController.updateProf
 router.get("/",authenticateToken, customerController.getDetails)
 
 router
-.route("/address")
-.post(authenticateToken,customerController.addAddress)
+.route("/addresses")
+
 .get(authenticateToken,customerController.getAllAddress)
 
-
+router
+.route("/address")
+.post(authenticateToken,customerController.addAddress)
 
 router
 .route("/address/:address_Id")
