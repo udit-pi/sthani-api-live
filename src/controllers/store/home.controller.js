@@ -14,8 +14,8 @@ const {
 
 const setProduct = (product, productImage, brand) => {
   try {
-    let productData = [];
-    productData.push({
+    let productData = {}
+    productData = {
       id: product.id,
       name: product.name,
       image: productImage?.file_name
@@ -34,7 +34,7 @@ const setProduct = (product, productImage, brand) => {
         original_amount: product.cost,
         discounted_price: product.discounted_price,
       },
-    });
+    };
     return productData;
   } catch (err) {
     throw err;
@@ -200,7 +200,7 @@ const getwidgets = catchAsync(async (req, res) => {
           let categories = [];
           let updatedProducts = [];
         
-          console.log(widget);
+          // console.log(widget);
           await Promise.all(
             widget.items?.map(async (item) => {
               const category = await Category.findById(item.category);
