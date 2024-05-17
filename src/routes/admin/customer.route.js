@@ -14,6 +14,10 @@ router
   .get(auth('getCustomers'), validate(customerValidation.getCustomers),customerController.getCustomers);
 
 router
+.route("/:id")
+.get( auth('getCustomers'),validate(customerValidation.getCustomers),customerController.getCustomersById)
+
+
 //   .route('/:brandId')
 //   .get(auth('getBrands'), validate(brandValidation.getBrand),brandController.getBrand)
 //   .patch(auth('manageBrands'),brandController.updateBrand)

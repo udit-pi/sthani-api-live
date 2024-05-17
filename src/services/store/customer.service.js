@@ -79,6 +79,28 @@ const queryCustomers = async (filter, options) => {
   return customers;
 };
 
+const queryCustomersById=async(id)=>{
+
+  try {
+    const customer = await Customer.findById(id)
+      .populate('wishlist')
+      .populate('favoriteBrands');
+
+    if (!customer) {
+      throw new Error('Customer not found');
+    }
+
+    return customer;
+  } catch (error) {
+    console.error(error);
+    throw new Error('Error fetching customer details');
+  }
+
+
+}
+
+
+
 const getUserByEmailOrPhone = async (result) => {
 const {email,mobile} = result
 
@@ -108,5 +130,6 @@ module.exports = {
   createCustomer,
   updateCustomer,
   getUserByEmailOrPhone,
-  queryCustomers
+  queryCustomers,
+  queryCustomersById
 };
