@@ -9,6 +9,8 @@ const productVariantRoute = require('./product_variant.route');
 const productMediaRoute = require('./product_media.route');
 const customerRoute = require('./customer.route');
 const homeRoute = require('./home.route');
+const discount = require('./discount.route');
+
 
 const config = require('../../config/config');
 
@@ -54,6 +56,10 @@ const defaultRoutes = [
   {
     path: '/home',
     route: homeRoute
+  },
+  {
+    path: '/discount',
+    route: discount
   }
 ];
 
