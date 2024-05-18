@@ -20,10 +20,10 @@ const setProduct = (product, productImage, brand) => {
       name: product.name,
       image: productImage?.file_name
         ? MEDIA_URL + productImage.file_name
-        : "No Image",
+        : "",
       brand: {
         name: brand.name,
-        logo: MEDIA_URL + brand.logo,
+        logo:  brand.logo ? MEDIA_URL + brand.logo : ""
       },
       link: {
         destination: "product",
@@ -62,7 +62,7 @@ const getwidgets = catchAsync(async (req, res) => {
             widget.items?.map(async (item) => {
               const brand = await Brand.findById(item.brand);
               slides.push({
-                image: MEDIA_URL + item.image,
+                image: item.image ? MEDIA_URL + item.image : "",
                 description: item.description,
                 tag: item.tag,
                 brand: {
@@ -130,7 +130,7 @@ const getwidgets = catchAsync(async (req, res) => {
 
               brands.push({
                 name: brand.name,
-                logo: brand.log ? MEDIA_URL + brand.logo: "",
+                logo: brand.logo ? MEDIA_URL + brand.logo: "",
                 link: {
                   destination: "brand",
                   id: item.brand,
