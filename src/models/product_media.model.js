@@ -16,11 +16,11 @@ const productMediaSchema = mongoose.Schema(
         ref: 'Product',
         required: true
     },
-    variant_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'ProductVariant',
-        required: false
-    },
+    // variant_id: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'ProductVariant',
+    //     required: false
+    // },
     title: {
         type: String,
         required: true

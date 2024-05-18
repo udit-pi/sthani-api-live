@@ -109,165 +109,18 @@ const getImageById = async (imageIdToFind) => {
 
 const createProduct = catchAsync(async (req, res) => {
   try {
-    // Save newly created custom property
-    if(req.body.variants) {
-      const property = await createProperty(req.body.variants);   
+  
    
-    }
-
-    
-    // const newProperty = new Property();
-    // console.log(req.body.variants);
-    // req.body.variants?.map(async (variant) => {});
-
     // create new product
-    const product = await productService.createProduct(req.body);
-
-    // console.log('product: ' + product);
-
-    // save product variant
-    if (product) {
-      // let property_ids = [];
-      let savedVariants = [];
-
-      await findProperties(req.body.variants);
-      
-    //  console.log(property_ids)
-
-      const createVariantPromises = req.body.productVariant?.map(async (variant) => {
-        newVariant = await productVariantService.createProductVariant(variant, product, property_ids);
-        savedVariants.push(newVariant);
-        return newVariant;
-        // console.log(variant);
-        // console.log(req.body.variants);
-      });
-      Promise.all(createVariantPromises)
-        .then(() => {
-          console.log('productVariants:' + savedVariants);
-          if (savedVariants.length > 0) {
-            // const id_count = variant_ids.count();
-
-            savedVariants?.map((variant, index) => {
-              // Check if the productVariant[0][image] field is empty
-              if (req.files && req.files[`productVariant[${index}][image]`]) {
-                const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
-                const imageFile = req.files[`productVariant[${index}][image]`];
-                const fileSize = imageFile.size;
-                const variantImage = uploadSingleFile(imageFile);
-                const fileExtension = variantImage.split('.').pop();
-                // console.log(fileExtension);
-                // console.log(variant.name);
-                let file_type = '';
-                if (imageExtensions.includes(fileExtension.toLowerCase())) {
-                  file_type = 'image';
-                } else {
-                  file_type = 'video';
-                }
-
-                const mediaBody = {
-                  disk_name: 'uploads',
-                  file_name: variantImage,
-                  product_id: product._id,
-                  variant_id: variant.id,
-                  title: variant.name, //how to save title
-                  filesize: fileSize,
-                  type: file_type,
-                };
-
-                const media = productMediaService.createProductMedia(mediaBody);
-                // media.save();
-                // console.log(media);
-                // Process the image file
-              } else {
-                // The field is empty
-                // Handle empty image field
-
-                return res.status(400).json({ error: 'Image file is required' });
-              }
-            });
-          }
-        })
-        .catch((error) => {
-          console.error('Error creating product variants:', error);
-        });
-
-      const files = req.files['files[]'];
-
-      if (files) {
-        // Check if files is an array
-        if (Array.isArray(files)) {
-          // Multiple files uploaded
-          files.forEach((file) => {
-            console.log('Array File:', file.originalFilename);
-            const fileName = Date.now() + file.originalFilename;
-            const file_path = path.join(uploadFolder, fileName);
-            fs.renameSync(file.filepath, file_path); // Move file to desired location
-
-            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
-
-            const fileSize = file.size;
-
-            const fileExtension = fileName.split('.').pop();
-            // console.log(fileExtension);
-            // console.log(variant.name);
-            let file_type = '';
-            if (imageExtensions.includes(fileExtension.toLowerCase())) {
-              file_type = 'image';
-            } else {
-              file_type = 'video';
-            }
-            const mediaBody = {
-              disk_name: 'uploads',
-              file_name: fileName,
-              product_id: product._id,
-              variant_id: null,
-              title: 'Media', //how to save title
-              filesize: fileSize,
-              type: file_type,
-            };
-            const media = productMediaService.createProductMedia(mediaBody);
-            // console.log(media);
-            // media.save();
-
-            // uploadedFiles.push(fileName);
-          });
-        } else {
-          // Single file uploaded
-          console.log('File:', files.originalFilename);
-          const fileName = Date.now() + files.originalFilename;
-          const file_path = path.join(uploadFolder, fileName);
-          fs.renameSync(files.filepath, file_path); // Move file to desired location
-
-          const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
-
-          const fileSize = files.size;
-
-          const fileExtension = fileName.split('.').pop();
-          // console.log(fileExtension);
-          // console.log(variant.name);
-          let file_type = '';
-          if (imageExtensions.includes(fileExtension.toLowerCase())) {
-            file_type = 'image';
-          } else {
-            file_type = 'video';
-          }
-          const mediaBody = {
-            disk_name: 'uploads',
-            file_name: fileName,
-            product_id: product._id,
-            variant_id: null,
-            title: 'Media', //how to save title
-            filesize: fileSize,
-            type: file_type,
-          };
-
-          const media = productMediaService.createProductMedia(mediaBody);
-          // console.log(media);
-          // media.save();
-        }
-      } 
+    const product = await productService.createProduct(req.body,req.files);
+   
+    if(product) {
+      return res.status(201).json({status: 201, message: 'Product created successfully!' });
+    } else {
+      return  res.status(400).json({status: 400, message: 'Error creating product' });
     }
-     return res.status(201).json({ message: 'Product created successfully!' });
+
+   
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -292,32 +145,32 @@ const getProduct = catchAsync(async (req, res) => {
   }
   const brand = await Brand.findById(product.brand_id);
 
-  const productVariant = await ProductVariant.find({ product_id: product._id }).exec();
-  console.log(productVariant)
+  // const productVariant = await ProductVariant.find({ product_id: product._id }).exec();
+  // console.log(productVariant)
 
   const productMedia = await ProductMedia.find({ product_id: product._id }).exec();
 
-  const properties = await Property.find().exec();
+  // const properties = await Property.find().exec();
   //  console.log(properties)
   //  console.log(productVariant)
-  let variantProperties = [];
-  if (productVariant && properties) {
-    variantProperties = productVariant
-      .map((prop) => {
-        // console.log('Property ID:', prop._id);
-        return properties.filter((item) => prop.property_id.includes(item._id));
-      })
-      .flat();
-  }
+  // let variantProperties = [];
+  // if (productVariant && properties) {
+  //   variantProperties = productVariant
+  //     .map((prop) => {
+  //       // console.log('Property ID:', prop._id);
+  //       return properties.filter((item) => prop.property_id.includes(item._id));
+  //     })
+  //     .flat();
+  // }
 
-  console.log('Variant Properties:', variantProperties);
+  // console.log('Variant Properties:', variantProperties);
 
   res.send({
     product: product,
     brand: brand,
-    productVariant: productVariant,
+   
     productMedia: productMedia,
-    variantProperties: variantProperties,
+  
   });
 });
 

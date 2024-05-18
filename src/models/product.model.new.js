@@ -12,7 +12,7 @@ const productSchema = mongoose.Schema(
     },
     sku: {
       type: String,
-      required: true,
+      required: false,
       unique: true,
     },
     name: {
@@ -128,7 +128,8 @@ const productSchema = mongoose.Schema(
     },
     discounted_price: {
       type: Number,
-      required: false,
+      default: 0
+,
     },
     // price_includes_tax: {
     //     type: Boolean,
@@ -157,21 +158,8 @@ const productSchema = mongoose.Schema(
         ref: "Category",
       },
     ],
-    options: {
-      type: [
-        {
-          name: {
-            type: String,
-            required: false,
-          },
-          values: {
-            type: [String],
-            required: false,
-          },
-        },
-      ],
-    },
-    variants: {
+   
+    productVariants: {
       type: [
         {
           variantId: {
@@ -183,18 +171,19 @@ const productSchema = mongoose.Schema(
             required: false,
            
           },
-          price: {
+          variantPrice: {
             type: Number,
             required: false
           },
-          stock: {
+          variantDiscountedPrice: {
             type: Number,
             required: false
           },
-          discounted_price: {
+          variantStock: {
             type: Number,
             required: false
           },
+        
           image: {
             type: String,
             required: false
@@ -203,6 +192,40 @@ const productSchema = mongoose.Schema(
       ],
       required: false,
     },
+    additional_descriptions: {
+      type: [
+        {
+          label: {
+            type: String,
+            required: false
+          },
+          value: {
+            type: String,
+            required: false
+          }
+        }
+      ]
+    },
+    options: {
+      type: [
+        {
+          optionName: {
+            type: String,
+            required: false,
+          },
+          options: {
+            type: [
+              {
+                value: {
+                  type: String,
+                  required: false
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
   },
   {
     timestamps: true,
