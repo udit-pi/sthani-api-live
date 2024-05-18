@@ -5,7 +5,7 @@ const createProduct = {
   body: Joi.object().keys({
     brand_id: Joi.string().custom(objectId),
     name: Joi.string().required(),
-    sku: Joi.string().required(),
+    sku: Joi.string().allow(''),
     // slug: Joi.string().required(),
     description_short: Joi.string().allow(''),
     // logo: Joi.string().required(),
@@ -48,21 +48,35 @@ const createProduct = {
         value: Joi.string(),
       })
     ),
-    options: Joi.array().items(
-      Joi.object({
-        name: Joi.string().allow(''),
-        values: Joi.array().allow(''),
-        
-      })
-    ),
-    variants: Joi.array().items(
+    
+    productVariants: Joi.array().items(
       Joi.object({
         image: Joi.any().optional().allow(null),
         variantName: Joi.string().allow(''),
-        price: Joi.number().required(),
-        stock: Joi.number().required(),
-        discounted_price: Joi.number().optional().allow(null),
-      })
+        variantPrice: Joi.number().required(),
+        variantDiscountedPrice: Joi.number().optional().allow(null),
+        variantStock: Joi.number().required(),
+        
+      })    
+    ),
+    additional_descriptions: Joi.array().items(
+      Joi.object({
+        label: Joi.string().optional().allow(''),
+        value: Joi.string().allow(''),
+               
+      })    
+    ),
+    options: Joi.array().items(
+      Joi.object({
+        optionName: Joi.string().optional().allow(null),
+        options: Joi.array().items(
+          Joi.object({
+            value:  Joi.string().optional().allow(null),
+          })
+        )
+       
+        
+      })    
     ),
   })
   .options({ allowUnknown: true }),

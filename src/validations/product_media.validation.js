@@ -6,7 +6,7 @@ const createProductMedia = {
     disk_name: Joi.string().required(),
     file_name: Joi.string().required(),
     product_id: Joi.string().custom(objectId),
-    variant_id: Joi.string().custom(objectId),
+    // variant_id: Joi.string().custom(objectId),
     title: Joi.string().required(),
     filesize: Joi.number().required(),
     type: Joi.string().required(),

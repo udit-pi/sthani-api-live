@@ -8,9 +8,10 @@ const fs = require('fs');
 const createProductMedia = async (body) => {
 
   const newProductMedia = new ProductMedia(body);
-  await newProductMedia.save();
+  console.log(newProductMedia);
+  const result = await newProductMedia.save();
   
-  return newProductMedia;
+  return result;
 };
 
 const queryProductMedias = async (filter, options) => {
