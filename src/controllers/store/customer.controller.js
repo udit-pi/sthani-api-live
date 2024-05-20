@@ -98,6 +98,23 @@ if (!customer) {
 }
 const defaultAddress = customer.addresses.find(address => address.default);
 
+const  default_Address={
+
+  address_id:defaultAddress._id,
+  name: defaultAddress.name,
+  mobile:defaultAddress.mobile ,
+  address_line:defaultAddress.address_line,
+  city: defaultAddress.city,
+  state: defaultAddress.state,
+  postal_code:defaultAddress.postal_code,
+  landmark: defaultAddress.landmark,
+  address_type:  defaultAddress.address_type,
+  default_address:defaultAddress.default
+
+
+}
+
+
 const responseData = {
   first_name: customer.first_name,
   last_name: customer.last_name,
@@ -105,7 +122,7 @@ const responseData = {
   email: customer.email,
   dob: customer.dob,
   gender: customer.gender,
-  default_address: defaultAddress
+   default_address: default_Address
 };
 
 res.status(200).json({ status: 200, message: 'Success', data: responseData });
@@ -199,7 +216,26 @@ try{
   // Extract addresses from the customer
   const addresses = customer.addresses;
 
-  res.status(200).json({ status: 200, message: 'Success', data: addresses });
+const responseAddresses={
+  addresses:addresses.map((address)=>({
+    address_id:address._id,
+    name: address.name,
+    mobile:address.mobile ,
+    address_line:address.address_line,
+    city: address.city,
+    state: address.state,
+    postal_code:address.postal_code,
+    landmark: address.landmark,
+    address_type:  address.address_type,
+    default_address:address.default
+ }))
+
+
+}
+
+
+
+  res.status(200).json({ status: 200, message: 'Success', data: responseAddresses });
 
 
 
