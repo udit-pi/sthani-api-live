@@ -8,9 +8,9 @@ const fs = require('fs');
 const createProductMedia = async (body) => {
 
   const newProductMedia = new ProductMedia(body);
-  console.log(newProductMedia);
+  // console.log(newProductMedia);
   const result = await newProductMedia.save();
-  
+  // console.log(result)
   return result;
 };
 
