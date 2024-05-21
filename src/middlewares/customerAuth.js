@@ -17,7 +17,7 @@ const authenticateToken = async (req, res, next) => {
 
     
     const customer = await Customer.findById(decoded.sub);
-    
+    console.log(customer)
   
     if (!customer) {
       return res.status(401).json({ message: 'Unauthorized' });

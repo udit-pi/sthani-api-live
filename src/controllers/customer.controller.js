@@ -16,6 +16,16 @@ const getCustomers = catchAsync(async (req, res) => {
 
 })
 
+const getCustomersById= catchAsync(async (req, res) => {
+
+const {id}=req.params
+
+const customerDetails=await customerService.queryCustomersById(id)
+res.send(customerDetails)
+
+})
+
 module.exports = {
-    getCustomers
+    getCustomers,
+    getCustomersById
 }
