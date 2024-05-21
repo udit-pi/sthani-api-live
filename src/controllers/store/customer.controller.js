@@ -337,18 +337,29 @@ const customerId=payload.sub
 
  
 
-    // Update the address fields
-    addressToUpdate.name = name;
-    addressToUpdate.mobile = mobile;
-    addressToUpdate.address_line = address_line;
-    addressToUpdate.city = city;
-    addressToUpdate.state = state;
-    addressToUpdate.postal_code = postal_code;
-    addressToUpdate.landmark = landmark;
-    addressToUpdate.address_type = address_type;
-  //  addressToUpdate.isDefault=customer.addresses.default
+  //   // Update the address fields
+  //   addressToUpdate.name = name;
+  //   addressToUpdate.mobile = mobile;
+  //   addressToUpdate.address_line = address_line;
+  //   addressToUpdate.city = city;
+  //   addressToUpdate.state = state;
+  //   addressToUpdate.postal_code = postal_code;
+  //   addressToUpdate.landmark = landmark;
+  //   addressToUpdate.address_type = address_type;
+  // //  addressToUpdate.isDefault=customer.addresses.default
 
+  const updatedFields = {
+    ...(name !== undefined && { name }),
+    ...(mobile !== undefined && { mobile }),
+    ...(address_line !== undefined && { address_line }),
+    ...(city !== undefined && { city }),
+    ...(state !== undefined && { state }),
+    ...(postal_code !== undefined && { postal_code }),
+    ...(landmark !== undefined && { landmark }),
+    ...(address_type !== undefined && { address_type }),
+  };
 
+  Object.assign(addressToUpdate, updatedFields);
 
   if (isDefault==true) {
     addressToUpdate.default = true;
@@ -361,6 +372,7 @@ const customerId=payload.sub
 
     // Save the updated customer
     await customer.save();
+   
 
     res.status(200).json({ status: 200, message: 'Address updated successfully', data: addressToUpdate });
   } catch (error) {
