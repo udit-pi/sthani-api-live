@@ -129,22 +129,36 @@ const getProducts = {
         value: Joi.string(),
       })
     ),
-    options: Joi.array().items(
-      Joi.object({
-        name: Joi.string().allow(''),
-        values: Joi.array().allow(''),
-        
-      })
-    ),
-    variants: Joi.array().items(
+    productVariantsNew: Joi.array().items(
       Joi.object({
         image: Joi.any().optional().allow(null),
         variantName: Joi.string().allow(''),
-        price: Joi.number().required(),
-        stock: Joi.number().required(),
-        discounted_price: Joi.number().optional().allow(null),
-      })
+        variantPrice: Joi.number().required(),
+        variantDiscountedPrice: Joi.number().optional().allow(null),
+        variantStock: Joi.number().required(),
+        
+      })    
+    ).allow(''),
+    additional_descriptions: Joi.array().items(
+      Joi.object({
+        label: Joi.string().optional().allow(''),
+        value: Joi.string().allow(''),
+               
+      })    
     ),
+    options: Joi.array().items(
+      Joi.object({
+        optionName: Joi.string().optional().allow(null),
+        options: Joi.array().items(
+          Joi.object({
+            value:  Joi.string().optional().allow(null),
+          })
+        )
+       
+        
+      })    
+    ),
+    
   }),
 };
 
@@ -189,7 +203,7 @@ const updateProduct = {
     // quantity_default: Joi.number().default(0),
     quantity_min: Joi.number().default(0),
     // quantity_max: Joi.number(),
-    stock: Joi.number().default(0),
+    stock: Joi.number().allow(''),
     // reviews_rating: Joi.number(),
     // allow_out_of_stock_purchase: Joi.boolean(),
     price: Joi.number().required(),
@@ -204,22 +218,47 @@ const updateProduct = {
         value: Joi.string(),
       })
     ),
-    options: Joi.array().items(
+    productVariants: Joi.array().items(
       Joi.object({
-        name: Joi.string().allow(''),
-        values: Joi.array().allow(''),
+        // image: Joi.any().optional().allow(null),
+        variantName: Joi.string().allow(''),
+        variantPrice: Joi.number().required(),
+        variantDiscountedPrice: Joi.number().optional().allow(null),
+        variantStock: Joi.number().required(),
         
-      })
+      })    
     ),
-    variants: Joi.array().items(
+    productVariantsNew: Joi.array().items(
       Joi.object({
         image: Joi.any().optional().allow(null),
         variantName: Joi.string().allow(''),
-        price: Joi.number().required(),
-        stock: Joi.number().required(),
-        discounted_price: Joi.number().optional().allow(null),
-      })
+        variantPrice: Joi.number().required(),
+        variantDiscountedPrice: Joi.number().optional().allow(null),
+        variantStock: Joi.number().required(),
+        
+      })    
+    ).allow(''),
+    additional_descriptions: Joi.array().items(
+      Joi.object({
+        label: Joi.string().optional().allow(''),
+        value: Joi.string().allow(''),
+               
+      })    
     ),
+    options: Joi.array().items(
+      Joi.object({
+        optionName: Joi.string().optional().allow(null),
+        options: Joi.array().items(
+          Joi.object({
+            value:  Joi.string().optional().allow(null),
+          })
+        )
+       
+        
+      })    
+    ),
+  
+   
   })
   .options({ allowUnknown: true }),
    
