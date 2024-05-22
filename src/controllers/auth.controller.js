@@ -5,6 +5,12 @@ const { authService, userService, tokenService, emailService } = require('../ser
 const register = catchAsync(async (req, res) => {
   const user = await userService.createUser(req.body);
   const tokens = await tokenService.generateAuthTokens(user);
+  res.cookie('refreshToken', tokens.refresh.token, {
+    httpOnly: true,
+    // secure: true,
+    // sameSite: 'None',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
   res.status(httpStatus.CREATED).send({ user, tokens });
 });
 
@@ -12,6 +18,12 @@ const login = catchAsync(async (req, res) => {
   const { email, password } = req.body;
   const user = await authService.loginUserWithEmailAndPassword(email, password);
   const tokens = await tokenService.generateAuthTokens(user);
+  res.cookie('refreshToken', tokens.refresh.token, {
+    httpOnly: true,
+    // secure: true,
+    // sameSite: 'None',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
   res.send({ user, tokens });
 });
 

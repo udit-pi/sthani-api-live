@@ -12,8 +12,19 @@ const {
   ProductMedia,
 } = require("../../models");
 
+const calculateDiscountedPercentage = (price,discountValue) => {
+
+  if(discountValue !== 0) {
+    const percentage = ((price - discountValue)/ price ) * 100;
+    discounted_percentage = parseFloat(percentage.toFixed(0));
+    return discounted_percentage
+  }
+  return 0
+}
 const setProduct = (product, productImage, brand) => {
   try {
+    const percent =  calculateDiscountedPercentage(product.price,product.discounted_price ? product.discounted_price : 0)
+
     let productData = {}
     productData = {
       id: product.id,
@@ -22,6 +33,7 @@ const setProduct = (product, productImage, brand) => {
         ? MEDIA_URL + productImage.file_name
         : "",
       brand: {
+        brand_id: brand._id,
         name: brand.name,
         logo:  brand.logo ? MEDIA_URL + brand.logo : ""
       },
@@ -30,9 +42,9 @@ const setProduct = (product, productImage, brand) => {
         id: product.id,
       },
       price: {
-        amount: product.price,
-        original_amount: product.cost,
-        discounted_price: product.discounted_price,
+        amount: product.discounted_price ? product.discounted_price: product.price,
+        original_amount: product.price,
+        discounted_price: percent,
       },
     };
     return productData;
@@ -66,6 +78,7 @@ const getwidgets = catchAsync(async (req, res) => {
                 description: item.description,
                 tag: item.tag,
                 brand: {
+                  brand_id: brand._id,
                   name: brand.name,
                   logo: brand.logo ? MEDIA_URL + brand.logo : "",
                 },
@@ -129,6 +142,7 @@ const getwidgets = catchAsync(async (req, res) => {
               const brand = await Brand.findById(item.brand);
 
               brands.push({
+                brand_id: brand._id,
                 name: brand.name,
                 logo: brand.logo ? MEDIA_URL + brand.logo: "",
                 link: {
