@@ -10,6 +10,6 @@ const router = express.Router();
 
 
 // router.get('/:brandsId',getBrandsById);
-router.post('/:brandsId',authenticateToken,getFilterBrands)
+router.post('/:brandsId',getFilterBrands)
 
 module.exports = router;

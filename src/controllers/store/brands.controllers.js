@@ -24,12 +24,12 @@ const getFilterBrands=catchAsync(async(req,res)=>{
     const product = FilterProducts.sortedProducts
     const pageNumber = FilterProducts.page
 
-
+console.log(product)
     const response = {
         status: 200,
         message: 'Success',
         data: {
-
+           
             name:brand.name,
             banner:brand.banner,
             slideshow:brand.slide_show,
@@ -37,8 +37,10 @@ const getFilterBrands=catchAsync(async(req,res)=>{
            
 
             products: product.map(product => ({
+                Product_id:product._id,
                 name: product.name,
                 image: product.image,
+                short_description:product.description_short,
                   price:{
                     currency: "AED",
                     amount: product.price,
