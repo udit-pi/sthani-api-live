@@ -47,12 +47,16 @@ const getImageById = async (imageIdToFind) => {
 // }
 
 const calculateDiscountedPercentage = (price,discountValue) => {
-
-  if(discountValue !== 0) {
+  console.log(price,discountValue)
+  if(discountValue !== 0 && price != discountValue) {
+    console.log('inside')
     const percentage = ((price - discountValue)/ price ) * 100;
     discounted_percentage = parseFloat(percentage.toFixed(0));
     return discounted_percentage
   }
+  // if(price === discountValue) {
+  //   return 0
+  // }
   return 0
 }
 
@@ -83,7 +87,7 @@ const getProduct = catchAsync(async (req, res) => {
     //   discounted_percentage = parseFloat(percentage.toFixed(0));
     // }
 
-    let discounted_percentage =  calculateDiscountedPercentage(product.price,product.discounted_price)
+    let discounted_percentage =  calculateDiscountedPercentage(product.price,product.discounted_price ? product.discounted_price : 0)
     // console.log(discounted_percentage)
 
 
@@ -95,11 +99,11 @@ const getProduct = catchAsync(async (req, res) => {
   }, {});
   
  
-  function findOption(variantComponent, optionType) {
-    return options[optionType].find(option => variantComponent.toLowerCase().includes(option.toLowerCase())) || 'Undefined';
-}
+//   function findOption(variantComponent, optionType) {
+//     return options[optionType].find(option => variantComponent.toLowerCase().includes(option.toLowerCase())) || 'Undefined';
+// }
 
-// Function to find the matching option for a variant component
+
 function findOption(variantComponent, optionType) {
   return options[optionType].find(option => variantComponent.toLowerCase().includes(option.toLowerCase())) || 'Undefined';
 }
@@ -137,7 +141,7 @@ const transformedVariants =   await Promise.all (product.productVariants.map(asy
   Object.keys(options).forEach(optionType => {
       const matchingOption = findOption(variant.variantName, optionType);
       if (matchingOption !== 'Undefined') {
-          properties[optionType.slice(0, -1)] = matchingOption; // Trim 's' from option type
+          properties[optionType.slice(0, -1)] = matchingOption; 
       }
   });
 
@@ -149,7 +153,7 @@ const transformedVariants =   await Promise.all (product.productVariants.map(asy
       ...properties,
       price: {
           currency: "AED",
-          amount: variant.variantDiscountedPrice,
+          amount: variant.variantDiscountedPrice ?  variant.variantDiscountedPrice : variant.variantPrice,
           original_amount: variant.variantPrice,
           discount_percentage: discount_percent
       },
@@ -161,7 +165,7 @@ const transformedVariants =   await Promise.all (product.productVariants.map(asy
 const brand_products = await Product.find({ brand_id: brand._id }).limit(10).exec();
 
 const similar_products_in_brand = await Promise.all (brand_products.map(async(product) => {
-   const percent =  calculateDiscountedPercentage(product.price,product.discounted_price)
+   const percent =  calculateDiscountedPercentage(product.price,product.discounted_price ? product.discounted_price : 0)
 
 let images = await ProductMedia.find({product_id:product._id}).exec()
 // console.log('images',images);    
@@ -174,6 +178,7 @@ const image = matchingImages[0]
     name: product.name,
     image: image ? MEDIA_URL +  image.file_name  : '',
     brand: {
+      brand_id: brand._id,
       name: brand.name,
       logo: brand.logo ? MEDIA_URL + brand.logo : ''
     },
@@ -189,7 +194,7 @@ const image = matchingImages[0]
 const category_products = await Product.find({categories: { $all: product.categories }}).limit(10).exec();
   
 const similar_products_in_category = await Promise.all (category_products.map(async(product) => {
-  const percent =  calculateDiscountedPercentage(product.price,product.discounted_price)
+  const percent =  calculateDiscountedPercentage(product.price,product.discounted_price ? product.discounted_price : 0)
 
 let images = await ProductMedia.find({product_id:product._id}).exec()
 // console.log('images',images);    
@@ -202,6 +207,7 @@ const image = matchingImages[0]
    name: product.name,
    image: image ? MEDIA_URL +  image.file_name  : '',
    brand: {
+      brand_id: brand._id,
      name: brand.name,
      logo: brand.logo ? MEDIA_URL + brand.logo : ''
    },
@@ -224,7 +230,7 @@ const image = matchingImages[0]
        stock: product.stock,
        additional_descriptions: product.additional_descriptions,
        brand: {
-        id: brand._id,
+        brand_id: brand._id,
         name: brand.name,
         logo: brand.logo ? MEDIA_URL +  brand.logo : '',
         description: brand.description

@@ -429,80 +429,87 @@ const updateProductById = async (productId, productBody, req_files) => {
 
     if (files) {
       // Check if files is an array
-      if (Array.isArray(files)) {
-        // Multiple files uploaded
-        files.forEach(async (file) => {
-          console.log("Array File:", file.originalFilename);
-          console.log(file.size);
-          const fileName = Date.now() + file.originalFilename;
-          const file_path = path.join(uploadFolder, fileName);
-          fs.renameSync(file.filepath, file_path); // Move file to desired location
+      // if (Array.isArray(files)) {
+      //   // Multiple files uploaded
+      //   files.forEach(async (file) => {
+      //     console.log("Array File:", file.originalFilename);
+      //     console.log(file.size);
+      //     const fileName = Date.now() + file.originalFilename;
+      //     const file_path = path.join(uploadFolder, fileName);
+      //     fs.renameSync(file.filepath, file_path); // Move file to desired location
 
-          const imageExtensions = ["jpg", "jpeg", "png", "gif", "bmp"];
+      //     const imageExtensions = ["jpg", "jpeg", "png", "gif", "bmp"];
 
-          const fileSize = file.size;
+      //     const fileSize = file.size;
 
-          const fileExtension = fileName.split(".").pop();
-          // console.log(fileExtension);
-          // console.log(variant.name);
-          let file_type = "";
-          if (imageExtensions.includes(fileExtension.toLowerCase())) {
-            file_type = "image";
-          } else {
-            file_type = "video";
-          }
-          const mediaBody = {
-            disk_name: "media",
-            file_name: fileName,
-            product_id: product._id,
-            // variant_id: null,
-            title: "Media", //how to save title
-            filesize: fileSize,
-            type: file_type,
-          };
-          // console.log(mediaBody);
-          const productMedia = await createProductMedia(mediaBody);
-          product.image = productMedia.file_name;
-          // // console.log(media);
-          // media.save();
+      //     const fileExtension = fileName.split(".").pop();
+      //     // console.log(fileExtension);
+      //     // console.log(variant.name);
+      //     let file_type = "";
+      //     if (imageExtensions.includes(fileExtension.toLowerCase())) {
+      //       file_type = "image";
+      //     } else {
+      //       file_type = "video";
+      //     }
+      //     const mediaBody = {
+      //       disk_name: "media",
+      //       file_name: fileName,
+      //       product_id: product._id,
+      //       // variant_id: null,
+      //       title: "Media", //how to save title
+      //       filesize: fileSize,
+      //       type: file_type,
+      //     };
+      //     // console.log(mediaBody);
+      //     const productMedia = await createProductMedia(mediaBody);
+      //     product.image = productMedia.file_name;
+      //     // // console.log(media);
+      //     // media.save();
 
-          // uploadedFiles.push(fileName);
-        });
-      } else {
-        // Single file uploaded
-        console.log("File:", files.originalFilename);
-        const fileName = Date.now() + files.originalFilename;
-        const file_path = path.join(uploadFolder, fileName);
-        fs.renameSync(files.filepath, file_path); // Move file to desired location
+      //      uploadedFiles.push(fileName);
+      //   });
+      // } else {
+      //   // Single file uploaded
+      //   console.log("File:", files.originalFilename);
+      //   const fileName = Date.now() + files.originalFilename;
+      //   const file_path = path.join(uploadFolder, fileName);
+      //   fs.renameSync(files.filepath, file_path); // Move file to desired location
 
-        const imageExtensions = ["jpg", "jpeg", "png", "gif", "bmp"];
+      //   const imageExtensions = ["jpg", "jpeg", "png", "gif", "bmp"];
 
-        const fileSize = files.size;
+      //   const fileSize = files.size;
 
-        const fileExtension = fileName.split(".").pop();
-        // console.log(fileExtension);
-        // console.log(variant.name);
-        let file_type = "";
-        if (imageExtensions.includes(fileExtension.toLowerCase())) {
-          file_type = "image";
-        } else {
-          file_type = "video";
-        }
-        const mediaBody = {
-          disk_name: "media",
-          file_name: fileName,
-          product_id: product._id,
-          // variant_id: null,
-          title: "Media", //how to save title
-          filesize: fileSize,
-          type: file_type,
-        };
+      //   const fileExtension = fileName.split(".").pop();
+      //   // console.log(fileExtension);
+      //   // console.log(variant.name);
+      //   let file_type = "";
+      //   if (imageExtensions.includes(fileExtension.toLowerCase())) {
+      //     file_type = "image";
+      //   } else {
+      //     file_type = "video";
+      //   }
+      //   const mediaBody = {
+      //     disk_name: "media",
+      //     file_name: fileName,
+      //     product_id: product._id,
+      //     // variant_id: null,
+      //     title: "Media", //how to save title
+      //     filesize: fileSize,
+      //     type: file_type,
+      //   };
 
-        const productMedia = await createProductMedia(mediaBody);
-        product.image = productMedia.file_name;
-        // console.log(media);
-        // media.save();
-      }
+      //   const productMedia = await createProductMedia(mediaBody);
+      //   product.image = productMedia.file_name;
+      //   // console.log(media);
+      //   // media.save();
+      // }
+      const uploadedFiles = await handleFiles(product, files);
+      // console.log(uploadedFiles)
+      const media = await ProductMedia.find({product_id: product._id,title: 'Media'}).exec();
+      console.log(media);
+      product.image = media[0].file_name
+  
+       
     }
 
     await Promise.all(
@@ -517,6 +524,7 @@ const updateProductById = async (productId, productBody, req_files) => {
       })
     );
 
+   
     await product.save();
     return product;
   } catch (err) {
