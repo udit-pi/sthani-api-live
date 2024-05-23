@@ -79,6 +79,7 @@ name:product.brand_id.name,
 logo:product.brand_id.logo
         })),
         products: product.map(product => ({
+            Product_id:product._id,
             name: product.name,
             description_short: product.description_short,
             image: product.image,

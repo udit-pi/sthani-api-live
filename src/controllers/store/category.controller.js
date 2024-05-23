@@ -39,6 +39,7 @@ sub_categories:category.sub_categories,
 
 
         products: product.map(product => ({
+            Product_id:product._id,
             name: product.name,
             description_short: product.description_short,
             image: product.image,

@@ -435,9 +435,10 @@ const customerId=payload.sub
       const productlist = await Product.findById(productId).populate('brand_id');
 
       const wishlistProduct = {
-        id: productlist._id,
+        product_id: productlist._id,
         name: productlist.name,
         image: productlist.image, 
+        Short_description:product.Short_description,
         brand: {
           name: productlist.brand_id.name,
           logo: productlist.brand_id.logo 
@@ -498,7 +499,9 @@ const customerId=payload.sub
         id: product._id,
         name: product.name,
         image: product.image, 
+        Short_description:product.Short_description,
         brand: {
+          brand_id:product.brand_id._id,
           name: product.brand_id.name,
           logo: product.brand_id.logo 
         },
