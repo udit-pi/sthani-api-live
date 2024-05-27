@@ -39,10 +39,10 @@ const categorySchema = mongoose.Schema(
   
 
   },
-  parent_category: {
+  parent_category:[ {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Category'
-},
+}],
 
     banner: {
       type: String,
