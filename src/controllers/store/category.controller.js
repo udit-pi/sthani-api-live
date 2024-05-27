@@ -21,8 +21,8 @@ const getFiltercategory=catchAsync(async(req,res)=>{
 });
     if (!category)throw new ApiError(httpStatus.NOT_FOUND, 'Category not found');
     
-    const categoryIdObject = mongoose.Types.ObjectId(categoryId);
-    let productsQuery =await Product.find({ categories: categoryIdObject }).populate({
+    // const categoryIdObject = mongoose.Types.ObjectId(categoryId);
+    let productsQuery =await Product.find({ categories: categoryId }).populate({
         path: 'brand_id',
      
 
@@ -34,7 +34,7 @@ const getFiltercategory=catchAsync(async(req,res)=>{
  const product = FilterProducts.sortedProducts
 
  const pageNumber = FilterProducts.page
-   
+
 const response = {
     status: 200,
     message: 'Success',
@@ -55,7 +55,7 @@ sub_categories: category.parent_category.map(subCat => ({
             Product_id:product._id,
             name: product.name,
             description_short: product.description_short,
-            image: product.media[0].file_name,
+             image:product.media[0].file_name,
           
             brand: {
                 brand_id: product.brand_id.id,
