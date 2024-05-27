@@ -6,14 +6,16 @@ const { required } = require("joi");
 const productSchema = mongoose.Schema(
   {
     brand_id: {
-      type: mongoose.Schema.Types.ObjectId,
+      // type: mongoose.Schema.Types.ObjectId,
+      type: String,
       ref: "Brand",
       required: false,
     },
     sku: {
       type: String,
       required: false,
-      unique: true,
+      unique: false
+     
     },
     name: {
       type: String,
@@ -128,8 +130,7 @@ const productSchema = mongoose.Schema(
     },
     discounted_price: {
       type: Number,
-      default: 0
-,
+      default: 0,
     },
     // price_includes_tax: {
     //     type: Boolean,
@@ -158,8 +159,8 @@ const productSchema = mongoose.Schema(
         ref: "Category",
       },
     ],
-   
-    productVariants: {
+
+    product_variants: {
       type: [
         {
           variantId: {
@@ -169,25 +170,24 @@ const productSchema = mongoose.Schema(
           variantName: {
             type: String,
             required: false,
-           
           },
           variantPrice: {
             type: Number,
-            required: false
+            required: false,
           },
           variantDiscountedPrice: {
             type: Number,
-            required: false
+            required: false,
           },
           variantStock: {
             type: Number,
-            required: false
+            required: false,
           },
-        
+
           image: {
             type: String,
-            required: false
-          }
+            required: false,
+          },
         },
       ],
       required: false,
@@ -197,14 +197,14 @@ const productSchema = mongoose.Schema(
         {
           label: {
             type: String,
-            required: false
+            required: false,
           },
           value: {
             type: String,
-            required: false
-          }
-        }
-      ]
+            required: false,
+          },
+        },
+      ],
     },
     options: {
       type: [
@@ -218,19 +218,39 @@ const productSchema = mongoose.Schema(
               {
                 value: {
                   type: String,
-                  required: false
-                }
-              }
-            ]
-          }
-        }
-      ]
+                  required: false,
+                },
+              },
+            ],
+          },
+        },
+      ],
     },
-    image: {
-      type: String,
-      required: false
-    }
-  },
+    media: 
+      
+      [ 
+        {
+        file_name: String,
+        // title: String,
+        file_size: Number,
+        file_type: String,
+        variant_id: {
+          type: String,
+          required: false,
+        },
+       
+      },
+    ]
+     
+        
+            
+          
+         
+        
+       
+     
+    },
+  
   {
     timestamps: true,
   }

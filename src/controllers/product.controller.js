@@ -109,13 +109,14 @@ const getImageById = async (imageIdToFind) => {
 
 const createProduct = catchAsync(async (req, res) => {
   try {
-  
+   
+    
    
     // create new product
     const product = await productService.createProduct(req.body,req.files);
-   
+   console.log(product);
     if(product) {
-      return res.status(201).json({status: 201, message: 'Product created successfully!' });
+      return res.status(201).json({status: 201, message: 'Product created successfully!',product: product });
     } else {
       return  res.status(400).json({status: 400, message: 'Error creating product' });
     }
@@ -143,12 +144,14 @@ const getProduct = catchAsync(async (req, res) => {
   if (!product) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Product not found');
   }
-  const brand = await Brand.findById(product.brand_id);
+
+ 
+  // const brand = await Brand.findById(product.brand_id);
 
   // const productVariant = await ProductVariant.find({ product_id: product._id }).exec();
   // console.log(productVariant)
 
-  const productMedia = await ProductMedia.find({ product_id: product._id }).exec();
+  // const productMedia = await ProductMedia.find({ product_id: product._id }).exec();
 
   // const properties = await Property.find().exec();
   //  console.log(properties)
@@ -167,9 +170,9 @@ const getProduct = catchAsync(async (req, res) => {
 
   res.send({
     product: product,
-    brand: brand,
+    // brand: brand,
    
-    productMedia: productMedia,
+    
   
   });
 });
@@ -180,7 +183,7 @@ const updateProduct = catchAsync(async (req, res) => {
   try {
         
     const product = await productService.updateProductById(req.params.productId,req.body,req.files);
-   
+  //  console.log(product)
     if(product) {
       return res.status(200).json({status: 200, message: 'Product updated successfully!' });
     } else {
