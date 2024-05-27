@@ -5,7 +5,7 @@ const { filters } = require('../../services/store/filter.service');
 const ApiError = require('../../utils/ApiError');
 const catchAsync = require('../../utils/catchAsync');
 const pick = require('../../utils/pick');
-
+const MEDIA_URL = process.env.MEDIA_URL;
 
 
 
