@@ -39,13 +39,13 @@ console.log(product)
             products: product.map(product => ({
                 Product_id:product._id,
                 name: product.name,
-                image: product.image,
+                image: product.media[0].file_name,
                 short_description:product.description_short,
                   price:{
                     currency: "AED",
                     amount: product.price,
-                    original_amount: product.price,
-                    discount_percentage: product.discounted_price  
+                    original_amount: product.discounted_price,
+                    discount_percentage: product.discounted_price ? Math.round(((product.price - product.discounted_price) / product.price) * 100) : 0 
                 }
               
             }))

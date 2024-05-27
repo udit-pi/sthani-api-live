@@ -6,11 +6,10 @@ const { required } = require("joi");
 const productSchema = mongoose.Schema(
   {
     brand_id: {
-      // type: mongoose.Schema.Types.ObjectId,
-      type: String,
-      ref: "Brand",
-      required: false,
-    },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Brand',
+      required: true
+  },
     sku: {
       type: String,
       required: false,
