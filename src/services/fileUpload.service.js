@@ -32,7 +32,7 @@ const uploadMultipleFile = (files,labels) =>  {
        
     })   
 
-    labels.map((lab,index) => {
+    labels&&labels.map((lab,index) => {
         images[index].label = lab 
     })
     return images;
