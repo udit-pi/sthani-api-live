@@ -15,15 +15,24 @@ const getFiltercategory=catchAsync(async(req,res)=>{
     const { sort } = query;
    
    const  filterData=req.body.filter
-    const category = await Category.findById(categoryId);
+   const category = await Category.findById(categoryId).populate({
+    path: 'parent_category',
+    select: 'name'
+});
     if (!category)throw new ApiError(httpStatus.NOT_FOUND, 'Category not found');
+    
     const categoryIdObject = mongoose.Types.ObjectId(categoryId);
-    let productsQuery =await Product.find({ categories: categoryIdObject });
+    let productsQuery =await Product.find({ categories: categoryIdObject }).populate({
+        path: 'brand_id',
+     
+
+    });
 
     //filter or paginate function
      let FilterProducts= filters(productsQuery,query,filterData)
 
  const product = FilterProducts.sortedProducts
+
  const pageNumber = FilterProducts.page
    
 const response = {
@@ -34,7 +43,11 @@ name:category.name,
 banner:category.banner,
 slideshow:category.slide_show,
 description:category.description,
-sub_categories:category.sub_categories,
+sub_categories: category.parent_category.map(subCat => ({
+    id: subCat._id,
+    name: subCat.name
+    
+})),
 
 
 
@@ -42,17 +55,19 @@ sub_categories:category.sub_categories,
             Product_id:product._id,
             name: product.name,
             description_short: product.description_short,
-            image: product.image,
+            image: product.media[0].file_name,
           
             brand: {
-                brand_id: product.brand_id,
-                name: product.brand_name // Assuming brand_name is a field in the product schema
+                brand_id: product.brand_id.id,
+                name: product.brand_id.name,
+                logo:product.brand_id.logo
+
             },
             price:{
                 currency: "AED",
                 amount: product.price,
-                original_amount: product.price,
-                discount_percentage: product.discounted_price  
+                original_amount: product.discounted_price,
+                discount_percentage: product.discounted_price ? Math.round(((product.price - product.discounted_price) / product.price) * 100) : 0 
             }
         }))
     },
