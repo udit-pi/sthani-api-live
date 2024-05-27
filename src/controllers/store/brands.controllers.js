@@ -24,6 +24,8 @@ const getFilterBrands=catchAsync(async(req,res)=>{
     const product = FilterProducts.sortedProducts
     const pageNumber = FilterProducts.page
 
+    const productSlideshow = brand.slide_show.map(image => MEDIA_URL + image);
+
 console.log(product)
     const response = {
         status: 200,
@@ -32,7 +34,7 @@ console.log(product)
            
             name:brand.name,
             banner:brand.banner,
-            slideshow:brand.slide_show,
+            slideshow:productSlideshow,
             description:brand.description,
            
 
