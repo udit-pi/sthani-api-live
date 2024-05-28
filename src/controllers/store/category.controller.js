@@ -58,7 +58,7 @@ const getFiltercategory = catchAsync(async (req, res) => {
             sub_categories: category.parent_category.map(subCat => ({
                 id: subCat._id,
                 name: subCat.name,
-                icon: `${MEDIA_URL}${subCat.icon}`
+                icon: subCat.icon && `${MEDIA_URL}${subCat.icon}`
             })),
 
 
