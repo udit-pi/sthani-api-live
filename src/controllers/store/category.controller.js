@@ -13,6 +13,9 @@ const getFiltercategory=catchAsync(async(req,res)=>{
     const query = pick(req.query, ['sort', 'page']);
     const { categoryId } = req.params
     const { sort } = query;
+    if (!categoryId || !mongoose.Types.ObjectId.isValid(categoryId)) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid categoryId');
+    }
     const categoryIdObject = mongoose.Types.ObjectId(categoryId);
    const  filterData=req.body.filter
    const category = await Category.findById(categoryIdObject).populate({
