@@ -11,16 +11,23 @@ const MEDIA_URL = process.env.MEDIA_URL;
 
 const getFiltercategory = catchAsync(async (req, res) => {
 
+    
+    console.log("Params: ", req.params);
     const { categoryId } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+    console.log("Category: ", categoryId);
+
+    if (!categoryId || !mongoose.Types.ObjectId.isValid(categoryId)) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid categoryId');
     }
 
     const categoryIdObject = mongoose.Types.ObjectId(categoryId);
+    console.log("Category Obj: ", categoryIdObject);
     const category = await Category.findById(categoryIdObject).populate({
         path: 'parent_category',
         select: '_id name icon'
     });
+    console.log("Category data: ", category);
+    
 
     if (!category) throw new ApiError(httpStatus.NOT_FOUND, 'Category not found');
 
