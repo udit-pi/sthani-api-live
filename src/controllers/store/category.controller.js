@@ -7,12 +7,14 @@ const ApiError = require("../../utils/ApiError");
 const httpStatus = require("http-status");
 const { filters } = require("../../services/store/filter.service");
 const mongoose = require('mongoose');
+const MEDIA_URL = process.env.MEDIA_URL;
 const getFiltercategory=catchAsync(async(req,res)=>{
 
 
     const query = pick(req.query, ['sort', 'page']);
     const { categoryId } = req.params
     const { sort } = query;
+    
     if (!categoryId || !mongoose.Types.ObjectId.isValid(categoryId)) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid categoryId');
     }
@@ -39,14 +41,24 @@ const getFiltercategory=catchAsync(async(req,res)=>{
  const product = FilterProducts.sortedProducts
 
  const pageNumber = FilterProducts.page
-console.log(product)
+
+ 
+
+ if (product && Array.isArray(product[0].media)) {
+   // Map over the array of filenames and concatenate MEDIA_URL with each filename
+   var productImage = product[0].media.map(filename => MEDIA_URL + filename);
+   console.log("Hello", productImage);
+ } else {
+   console.log("Product media is not defined or not an array");
+ }
+ const CategorySlideshow =category.slide_show.map(image => MEDIA_URL + image);
 const response = {
     status: 200,
     message: 'Success',
     data: {
 name:category.name,
-banner:category.banner,
-slideshow:category.slide_show,
+banner:`${MEDIA_URL}${category.banner}`,
+slideshow:CategorySlideshow,
 description:category.description,
 sub_categories: category.parent_category.map(subCat => ({
     id: subCat._id,
@@ -60,12 +72,12 @@ sub_categories: category.parent_category.map(subCat => ({
             Product_id:product._id,
             name: product.name,
             description_short: product.description_short,
-             image:product.media,
+             image:productImage,
           
             brand: {
                 brand_id: product.brand_id.id,
                 name: product.brand_id.name,
-                logo:product.brand_id.logo
+                logo:` ${MEDIA_URL}${product.brand_id.logo}`
 
             },
             price:{
