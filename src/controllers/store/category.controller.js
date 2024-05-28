@@ -24,7 +24,7 @@ const getFiltercategory = catchAsync(async (req, res) => {
 
     if (!category) throw new ApiError(httpStatus.NOT_FOUND, 'Category not found');
 
-    let products = await Product.find({ categories: categoryIdObject }).populate({
+    let productsQuery = await Product.find({ categories: categoryIdObject }).populate({
         path: 'brand_id',
     });
 
@@ -32,9 +32,9 @@ const getFiltercategory = catchAsync(async (req, res) => {
     const query = pick(req.query, ['sort', 'page']);
     const { sort } = query;    
     
-    // let FilterProducts = filters(productsQuery, query, filterData)
-    // const products = FilterProducts.sortedProducts
-     const pageNumber = 1
+    let FilterProducts = filters(productsQuery, query, filterData)
+    const products = FilterProducts.sortedProducts
+    const pageNumber = FilterProducts.page
 
 
 
