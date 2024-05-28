@@ -6,7 +6,7 @@ const productSchema = mongoose.Schema({
     brand_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Brand',
-        required: true
+        required: false
     },
     sku: {
         type: String,
@@ -32,7 +32,7 @@ const productSchema = mongoose.Schema({
     },
     description: {
         type: String,
-        required: true,
+        required: false,
         trim: true
     },
     meta_title: {
@@ -81,7 +81,7 @@ const productSchema = mongoose.Schema({
     },
     weight: {
         type: Number,
-        required: true
+        required: false
     },
     length: {
         type: Number,

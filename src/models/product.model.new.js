@@ -8,7 +8,7 @@ const productSchema = mongoose.Schema(
     brand_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Brand',
-      required: true
+      required: false
   },
     sku: {
       type: String,
@@ -38,20 +38,7 @@ const productSchema = mongoose.Schema(
       required: false,
       trim: true,
     },
-    // meta_title: {
-    //     type: String,
-    //     required: false,
-    //     trim: true
-    // },
-    // meta_description: {
-    //     type: String,
-    //     required: false,
-    //     trim: true
-    // },
-    // meta_keywords: {
-    //     type: [String],
-    //     required: false
-    // },
+    
     // additional_descriptions: {
     //     type: [
     //         {
@@ -98,55 +85,39 @@ const productSchema = mongoose.Schema(
       type: Number,
       required: false,
     },
-    // quantity_default: {
-    //     type: Number,
-    //     default: 1
-    // },
+   
     quantity_min: {
       type: Number,
       default: 1,
     },
-    // quantity_max: {
-    //     type: Number,
-    //     required: false
-    // },
+   
     stock: {
       type: Number,
       default: 0,
     },
-    // review_rating: {
-    //     type: Number,
-    //     required: false
-    // },
-    // allow_out_of_stock_purchases: {
-    //     type: Boolean,
-    //     default: 0
-
-    // },
+  
     price: {
       type: Number,
       required: true,
     },
     discounted_price: {
       type: Number,
-      default: 0,
+      required: false,
     },
-    // price_includes_tax: {
-    //     type: Boolean,
-    //     default: 1
-    // },
+   
     cost: {
       type: Number,
       required: false,
     },
-    published: {
-      type: String,
-      default: "Draft",
+    media: {
+      type: [String], 
+      required: true
     },
-    // sales_count: {
-    //     type: Number,
-    //     default: 0
-    // },
+    published: {
+      type: Boolean,
+      default: 0
+  },
+ 
     deleted_at: {
       type: Date,
       default: Date.now,
@@ -192,6 +163,7 @@ const productSchema = mongoose.Schema(
       required: false,
     },
     additional_descriptions: {
+      required:false,
       type: [
         {
           label: {
@@ -206,6 +178,7 @@ const productSchema = mongoose.Schema(
       ],
     },
     options: {
+      required:false,
       type: [
         {
           optionName: {
@@ -225,30 +198,8 @@ const productSchema = mongoose.Schema(
         },
       ],
     },
-    media: 
-      
-      [ 
-        {
-        file_name: String,
-        // title: String,
-        file_size: Number,
-        file_type: String,
-        variant_id: {
-          type: String,
-          required: false,
-        },
-       
-      },
-    ]
-     
-        
-            
-          
-         
-        
-       
-     
-    },
+  
+ },
   
   {
     timestamps: true,

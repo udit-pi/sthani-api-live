@@ -179,11 +179,11 @@ const getProduct = catchAsync(async (req, res) => {
 
 const updateProduct = catchAsync(async (req, res) => {
  
-
+console.log("hello")
   try {
         
-    const product = await productService.updateProductById(req.params.productId,req.body,req.files);
-  //  console.log(product)
+    const product = await productService.updateProductById(req.params.productId,req.body,req);
+
     if(product) {
       return res.status(200).json({status: 200, message: 'Product updated successfully!' });
     } else {
