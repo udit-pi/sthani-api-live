@@ -23,21 +23,21 @@ if (brandIdsSet.size > 0) {
 
 
 }
-// if (categoyIdsSet.size > 0) {
+if (categoyIdsSet.size > 0) {
 
-//     sortedProducts = sortedProducts.filter(product => {
-//         for (const category of product.categories) {
-//             if (categoyIdsSet.has(category.toString())) {
-//                 return true;
-//             }
-//         }
-//         return false;
-//     });
+    sortedProducts = sortedProducts.filter(product => {
+        for (const category of product.categories) {
+            if (categoyIdsSet.has(category.toString())) {
+                return true;
+            }
+        }
+        return false;
+    });
     
 
 
 
-// }
+}
 
 // if (search_keyword) {
 //     const keywordRegExp = new RegExp(search_keyword, 'i'); //its for a  Case-insensitive search
