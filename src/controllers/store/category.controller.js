@@ -88,7 +88,7 @@ const getFiltercategory = catchAsync(async (req, res) => {
         },
         meta: {
             current_page: pageNumber,
-            total: product.length,
+            total: products.length,
             query_params: {
                 sort,
                 page: pageNumber
