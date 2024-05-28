@@ -57,7 +57,8 @@ const getFiltercategory = catchAsync(async (req, res) => {
             description: category.description,
             sub_categories: category.parent_category.map(subCat => ({
                 id: subCat._id,
-                name: subCat.name
+                name: subCat.name,
+                icon: `${MEDIA_URL}${subCat.icon}`
             })),
 
 
@@ -68,7 +69,7 @@ const getFiltercategory = catchAsync(async (req, res) => {
                 return {
                     Product_id: product._id,
                     name: product.name,
-                    description_short: product.description_short,
+                    short_description: product.description_short,
                     image: productImages,
 
                     brand: {
