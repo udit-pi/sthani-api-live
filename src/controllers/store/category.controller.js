@@ -22,7 +22,7 @@ const getFiltercategory = catchAsync(async (req, res) => {
 
     const categoryIdObject = mongoose.Types.ObjectId(categoryId);
     console.log("Category Obj: ", categoryIdObject);
-    const category = await Category.findById(categoryIdObject).populate({
+    const category = await Category.findById(categoryId).populate({
         path: 'parent_category',
         select: '_id name icon'
     });
