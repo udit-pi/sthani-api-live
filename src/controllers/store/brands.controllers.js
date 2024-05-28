@@ -25,8 +25,14 @@ const getFilterBrands=catchAsync(async(req,res)=>{
     const pageNumber = FilterProducts.page
 
     const productSlideshow = brand.slide_show.map(image => MEDIA_URL + image);
-
-console.log(product)
+    if (product && Array.isArray(product[0].media)) {
+        // Map over the array of filenames and concatenate MEDIA_URL with each filename
+        var productImage = product[0].media.map(filename => MEDIA_URL + filename);
+        console.log("Hello", productImage);
+      } else {
+        console.log("Product media is not defined or not an array");
+      }
+// console.log( "hello", product)
     const response = {
         status: 200,
         message: 'Success',
@@ -36,13 +42,14 @@ console.log(product)
             banner:brand.banner,
             slideshow:productSlideshow,
             description:brand.description,
+            brand_logo:`${MEDIA_URL}${brand.logo}`,
            
 
             products: product.map(product => ({
                 Product_id:product._id,
                 name: product.name,
-                image: product.media[0].file_name,
-                short_description:product.description_short,
+                image: product.media&&productImage,
+                description_short: product.description_short,
                   price:{
                     currency: "AED",
                     amount: product.price,
