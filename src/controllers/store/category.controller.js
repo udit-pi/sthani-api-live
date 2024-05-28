@@ -69,7 +69,7 @@ const getFiltercategory = catchAsync(async (req, res) => {
                     Product_id: product._id,
                     name: product.name,
                     description_short: product.description_short,
-                    image: productImage,
+                    image: productImages,
 
                     brand: {
                         brand_id: product.brand_id.id,
