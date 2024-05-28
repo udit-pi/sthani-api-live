@@ -21,17 +21,17 @@ const getFilterBrands=catchAsync(async(req,res)=>{
 
     let FilterProducts= filters(productsQuery,query,filterData)
 
-    const product = FilterProducts.sortedProducts
+    const products = FilterProducts.sortedProducts
     const pageNumber = FilterProducts.page
 
     const productSlideshow = brand.slide_show.map(image => MEDIA_URL + image);
-    if (product && Array.isArray(product[0].media)) {
-        // Map over the array of filenames and concatenate MEDIA_URL with each filename
-        var productImage = product[0].media.map(filename => MEDIA_URL + filename);
-        console.log("Hello", productImage);
-      } else {
-        console.log("Product media is not defined or not an array");
-      }
+    // if (product && Array.isArray(product[0].media)) {
+    //     // Map over the array of filenames and concatenate MEDIA_URL with each filename
+    //     var productImage = product[0].media.map(filename => MEDIA_URL + filename);
+    //     console.log("Hello", productImage);
+    //   } else {
+    //     console.log("Product media is not defined or not an array");
+    //   }
 // console.log( "hello", product)
     const response = {
         status: 200,
@@ -45,23 +45,27 @@ const getFilterBrands=catchAsync(async(req,res)=>{
             brand_logo:`${MEDIA_URL}${brand.logo}`,
            
 
-            products: product.map(product => ({
+            products: products.map(product => {
+                const productImages = product.media ? product.media.map(filename => MEDIA_URL + filename) : [];
+
+                return {
                 Product_id:product._id,
                 name: product.name,
-                image: product.media&&productImage,
-                description_short: product.description_short,
+                image: productImages,
+                short_description: product.description_short,
                   price:{
                     currency: "AED",
                     amount: product.price,
                     original_amount: product.discounted_price,
                     discount_percentage: product.discounted_price ? Math.round(((product.price - product.discounted_price) / product.price) * 100) : 0 
                 }
+            };
               
-            }))
+            })
         },
         meta: {
             current_page: pageNumber,
-            total: product.length, 
+            total: products.length, 
             query_params: {
                 sort,
                 page: pageNumber
