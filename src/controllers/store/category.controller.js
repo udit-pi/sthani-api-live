@@ -55,10 +55,10 @@ const getFiltercategory = catchAsync(async (req, res) => {
             banner: `${MEDIA_URL}${category.banner}`,
             slideshow: CategorySlideshow,
             description: category.description,
-            // sub_categories: category.parent_category.map(subCat => ({
-            //     id: subCat._id,
-            //     name: subCat.name
-            // })),
+            sub_categories: category.parent_category.map(subCat => ({
+                id: subCat._id,
+                name: subCat.name
+            })),
 
 
 
