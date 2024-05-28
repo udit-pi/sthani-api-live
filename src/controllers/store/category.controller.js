@@ -24,8 +24,11 @@ const getFiltercategory = catchAsync(async (req, res) => {
     console.log("Category Obj: ", categoryIdObject);
     const category = await Category.findById(categoryId).populate({
         path: 'parent_category',
+        match: { _id: { $ne: "" } },
         select: '_id name icon'
     });
+
+    
     console.log("Category data: ", category);
     
 
