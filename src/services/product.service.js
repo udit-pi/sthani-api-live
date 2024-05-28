@@ -132,7 +132,7 @@ async function handleFiles(files) {
   // return images;
 }
 
-const createProduct = async (productBody, req_files) => {
+const createProduct = async (productBody, req) => {
   //  console.log(req_files)
   //  console.log(productBody)
   try {
@@ -141,7 +141,15 @@ const createProduct = async (productBody, req_files) => {
     const cats = productBody.category?.map((cat) => {
       return cat.value;
     });
+    if(req.files['media[]']){
+      var medias = uploadMultipleFile(req.files['media[]'])
+      var mediasValues = medias.map(item => item.value);
+      if (!productBody.media || !Array.isArray(productBody.media)) {
+        productBody.media = []; // Initialize slide_show as an array if it doesn't exist
+    }
 
+      var newMedia=[...productBody.media,...mediasValues]
+    }
     const product = new Product({
       brand_id: productBody.brand_id,
       sku: productBody.sku,
@@ -160,7 +168,7 @@ const createProduct = async (productBody, req_files) => {
 
       stock: productBody.stock,
       // reviews_rating: productBody.reviews_rating,
-
+      media:newMedia,
       price: productBody.price,
       discounted_price: productBody.discounted_price,
 
@@ -174,7 +182,9 @@ const createProduct = async (productBody, req_files) => {
 
    let mediaItems = productBody.mediaItems
   
-    
+   await product.save();
+
+   return product;
     if (await product.save()) {
      
       // const mediaLength = productBody.mediaItems.length();
@@ -241,9 +251,7 @@ const createProduct = async (productBody, req_files) => {
      };
 
 
-    await product.save();
-    // console.log(product);
-    return product;
+
   } catch (err) {
      return err;
   }
