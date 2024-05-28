@@ -6,7 +6,7 @@ const config = require('../../config/config');
 const { updateProfileValidation } = require('../../validations/store/profile.validation');
 const customerModel = require('../../models/customer.model');
 const Product = require('../../models/product.model');
-
+const MEDIA_URL = process.env.MEDIA_URL;
 const updateProfile = catchAsync(async (req, res) => {
 
     const authHeader = req.headers['authorization'];
@@ -474,7 +474,7 @@ const getWishlist = async (req, res) => {
   } 
   const payload = jwt.verify(token, config.jwt.secret);
 
-
+//http://localhost:3500/api/store/customer/wishlist
 const customerId=payload.sub
   try {
     
@@ -494,16 +494,18 @@ const customerId=payload.sub
 
     const wishlist = await Promise.all(customer.wishlist.map(async (productId) => {
       const product = await Product.findById(productId).populate('brand_id');
-      console.log(product)
+      console.log( "Hello",product)
+      const productImages = product.media.map(media => MEDIA_URL + media);
+      console.log(productImages)
       return {
         id: product._id,
         name: product.name,
-        image: product.image, 
-        Short_description:product.Short_description,
+        image:productImages, 
+        Short_description:product.description_short,
         brand: {
           brand_id:product.brand_id._id,
           name: product.brand_id.name,
-          logo: product.brand_id.logo 
+          logo: ` ${MEDIA_URL}${product.brand_id.logo }`
         },
         price: {
           currency: 'AED', 
