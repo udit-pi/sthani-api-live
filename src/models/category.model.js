@@ -23,61 +23,54 @@ const categorySchema = mongoose.Schema(
     //   trim: true,
     // },
 
-    icon:{
+    icon: {
       type: String,
       required: false,
       default: '',
       // trim: true,
-    
+
     },
     description: {
       type: String,
       required: false,
       trim: true,
-   
-   
-  
-
-  },
-  parent_category:[ {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Category'
-}],
+    },
+    parent_category: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category'
+    }],
 
     banner: {
       type: String,
       required: false,
       // trim: true,
       default: '',
-
-
-
     },
-    slide_show :[{
-      type: String, 
+    slide_show: [{
+      type: String,
       required: true
     }],
-  
+
     meta_title: {
       type: String,
       required: false,
       trim: true,
     },
     meta_description: {
-        type: String,
-        required: false,
-        trim: true,
+      type: String,
+      required: false,
+      trim: true,
     },
     deleted_at: {
-        type: Date,
-        default: Date.now,
-        required: false
+      type: Date,
+      default: Date.now,
+      required: false
     },
-    products: [{ 
+    products: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Product'
-  }]
-   
+    }]
+
   },
   {
     timestamps: true,
