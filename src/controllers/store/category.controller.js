@@ -19,7 +19,7 @@ const getFiltercategory = catchAsync(async (req, res) => {
     const categoryIdObject = mongoose.Types.ObjectId(categoryId);
     const category = await Category.findById(categoryIdObject).populate({
         path: 'parent_category',
-        select: 'name'
+        select: 'name icon'
     });
 
     if (!category) throw new ApiError(httpStatus.NOT_FOUND, 'Category not found');
