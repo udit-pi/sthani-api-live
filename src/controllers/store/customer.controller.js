@@ -438,7 +438,7 @@ const customerId=payload.sub
         product_id: productlist._id,
         name: productlist.name,
         image: productlist.image, 
-        Short_description:product.Short_description,
+        short_description:product.description_short,
         brand: {
           name: productlist.brand_id.name,
           logo: productlist.brand_id.logo 
@@ -501,7 +501,7 @@ const customerId=payload.sub
         id: product._id,
         name: product.name,
         image:productImages, 
-        Short_description:product.description_short,
+        short_description:product.description_short,
         brand: {
           brand_id:product.brand_id._id,
           name: product.brand_id.name,
