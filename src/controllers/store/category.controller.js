@@ -34,7 +34,7 @@ const getFiltercategory = catchAsync(async (req, res) => {
     
     // let FilterProducts = filters(productsQuery, query, filterData)
     // const products = FilterProducts.sortedProducts
-    // const pageNumber = FilterProducts.page
+     const pageNumber = 1
 
 
 
