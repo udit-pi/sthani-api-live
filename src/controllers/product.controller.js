@@ -113,7 +113,7 @@ const createProduct = catchAsync(async (req, res) => {
     
    
     // create new product
-    const product = await productService.createProduct(req.body,req.files);
+    const product = await productService.createProduct(req.body,req);
    console.log(product);
     if(product) {
       return res.status(201).json({status: 201, message: 'Product created successfully!',product: product });
