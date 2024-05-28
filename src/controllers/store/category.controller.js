@@ -8,97 +8,95 @@ const httpStatus = require("http-status");
 const { filters } = require("../../services/store/filter.service");
 const mongoose = require('mongoose');
 const MEDIA_URL = process.env.MEDIA_URL;
-const getFiltercategory=catchAsync(async(req,res)=>{
 
+const getFiltercategory = catchAsync(async (req, res) => {
 
-    const query = pick(req.query, ['sort', 'page']);
-    const { categoryId } = req.params
-    const { sort } = query;
-    
-    if (!categoryId || !mongoose.Types.ObjectId.isValid(categoryId)) {
+    const { categoryId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(categoryId)) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid categoryId');
     }
+
     const categoryIdObject = mongoose.Types.ObjectId(categoryId);
-   const  filterData=req.body.filter
-   const category = await Category.findById(categoryIdObject).populate({
-    path: 'parent_category',
-    select: 'name'
-});
-
-
-    if (!category)throw new ApiError(httpStatus.NOT_FOUND, 'Category not found');
-    
-    
-    let productsQuery =await Product.find({ categories: categoryIdObject }).populate({
-        path: 'brand_id',
-     
-
+    const category = await Category.findById(categoryIdObject).populate({
+        path: 'parent_category',
+        select: 'name'
     });
 
-    //filter or paginate function
-     let FilterProducts= filters(productsQuery,query,filterData)
+    if (!category) throw new ApiError(httpStatus.NOT_FOUND, 'Category not found');
 
- const product = FilterProducts.sortedProducts
+    let productsQuery = await Product.find({ categories: categoryIdObject }).populate({
+        path: 'brand_id',
+    });
 
- const pageNumber = FilterProducts.page
-
- 
-
- if (product && Array.isArray(product[0].media)) {
-   // Map over the array of filenames and concatenate MEDIA_URL with each filename
-   var productImage = product[0].media.map(filename => MEDIA_URL + filename);
-   console.log("Hello", productImage);
- } else {
-   console.log("Product media is not defined or not an array");
- }
- const CategorySlideshow =category.slide_show.map(image => MEDIA_URL + image);
-const response = {
-    status: 200,
-    message: 'Success',
-    data: {
-name:category.name,
-banner:`${MEDIA_URL}${category.banner}`,
-slideshow:CategorySlideshow,
-description:category.description,
-sub_categories: category.parent_category.map(subCat => ({
-    id: subCat._id,
-    name: subCat.name
+    const filterData = req.body.filter
+    const query = pick(req.query, ['sort', 'page']);
+    const { sort } = query;    
     
-})),
+    let FilterProducts = filters(productsQuery, query, filterData)
+    const products = FilterProducts.sortedProducts
+    const pageNumber = FilterProducts.page
 
 
 
-        products: product.map(product => ({
-            Product_id:product._id,
-            name: product.name,
-            description_short: product.description_short,
-             image:productImage,
-          
-            brand: {
-                brand_id: product.brand_id.id,
-                name: product.brand_id.name,
-                logo:` ${MEDIA_URL}${product.brand_id.logo}`
+    // if (product && Array.isArray(product[0].media)) {
+    //     // Map over the array of filenames and concatenate MEDIA_URL with each filename
+    //     var productImage = product[0].media.map(filename => MEDIA_URL + filename);
+        
+    // } else {
+    //     console.log("Product media is not defined or not an array");
+    // }
+    const CategorySlideshow = category.slide_show.map(image => MEDIA_URL + image);
 
-            },
-            price:{
-                currency: "AED",
-                amount: product.price,
-                original_amount: product.discounted_price,
-                discount_percentage: product.discounted_price ? Math.round(((product.price - product.discounted_price) / product.price) * 100) : 0 
+    const response = {
+        status: 200,
+        message: 'Success',
+        data: {
+            name: category.name,
+            banner: `${MEDIA_URL}${category.banner}`,
+            slideshow: CategorySlideshow,
+            description: category.description,
+            sub_categories: category.parent_category.map(subCat => ({
+                id: subCat._id,
+                name: subCat.name
+            })),
+
+
+
+            products: products.map(product => {
+                const productImages = product.media ? product.media.map(filename => MEDIA_URL + filename) : [];
+
+                return {
+                    Product_id: product._id,
+                    name: product.name,
+                    description_short: product.description_short,
+                    image: productImage,
+
+                    brand: {
+                        brand_id: product.brand_id.id,
+                        name: product.brand_id.name,
+                        logo: ` ${MEDIA_URL}${product.brand_id.logo}`
+
+                    },
+                    price: {
+                        currency: "AED",
+                        amount: product.price,
+                        original_amount: product.discounted_price,
+                        discount_percentage: product.discounted_price ? Math.round(((product.price - product.discounted_price) / product.price) * 100) : 0
+                    }
+                }; // return
+            })
+        },
+        meta: {
+            current_page: pageNumber,
+            total: product.length,
+            query_params: {
+                sort,
+                page: pageNumber
             }
-        }))
-    },
-    meta: {
-        current_page: pageNumber,
-        total: product.length, 
-        query_params: {
-            sort,
-            page: pageNumber
         }
-    }
-};
+    };
 
-res.status(200).json(response)
+    res.status(200).json(response)
 
 })
 
@@ -122,7 +120,7 @@ res.status(200).json(response)
 //  const product = FilterProducts.sortedProducts
 //  const pageNumber = FilterProducts.page
 
-  
+
 //     //Response structure
 //     const response = {
 //         status: 200,
@@ -162,4 +160,4 @@ res.status(200).json(response)
 
 
 
-module.exports={getFiltercategory }
+module.exports = { getFiltercategory }
