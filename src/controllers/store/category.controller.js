@@ -33,6 +33,9 @@ const getFiltercategory = catchAsync(async (req, res) => {
 
     if (!category) throw new ApiError(httpStatus.NOT_FOUND, 'Category not found');
 
+    const subCategories = await Category.find({ parent_category: categoryIdObject }).select('_id name icon');
+
+
     let productsQuery = await Product.find({ categories: categoryIdObject }).populate({
         path: 'brand_id',
     });
@@ -64,10 +67,10 @@ const getFiltercategory = catchAsync(async (req, res) => {
             banner: `${MEDIA_URL}${category.banner}`,
             slideshow: CategorySlideshow,
             description: category.description,
-            sub_categories: category.parent_category.map(subCat => ({
-                id: subCat._id,
+            sub_categories: subCategories.map(subCat => ({
+                id: subCat._id.toString(),
                 name: subCat.name,
-                icon: subCat.icon && `${MEDIA_URL}${subCat.icon}`
+                icon: subCat.icon ? `${MEDIA_URL}${subCat.icon}` : null
             })),
 
 
