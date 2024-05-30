@@ -48,11 +48,11 @@ const response = {
     data: {
 
         sort: [
-            { id: "relevance", "label": "Relevance" },
-            { id: "new", "label": "What's New" },
-            { id: "price_high_to_low", "label": "Price: High to Low" },
-            { id: "price_low_to_high", "label": "Price: Low to High" },
-            { id: "discounted", "label": "Discounted" }
+            { id: "relevance", "name": "Relevance" },
+            { id: "new", "name": "What's New" },
+            { id: "price_high_to_low", "name": "Price: High to Low" },
+            { id: "price_low_to_high", "name": "Price: Low to High" },
+            { id: "discounted", "name": "Discounted" }
           ],
        
 brands:brandResponse,
