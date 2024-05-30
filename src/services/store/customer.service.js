@@ -75,7 +75,8 @@ const updateCustomer = async (body) => {
 
 const queryCustomers = async (filter, options) => {
   // const brands = await Brand.paginate(filter, options);
-  const customers = await Customer.find({});
+  const customers = await Customer.find({}).sort({ createdAt: -1 });;
+  
   return customers;
 };
 
