@@ -76,11 +76,11 @@ const getSearch = catchAsync(async (req, res) => {
             brands: productData.map(product => ({
                 id: product.brand_id.id,
                 name: product.brand_id.name,
-                logo: product.brand_id.logo
+                logo: product.brand_id.logo && `${MEDIA_URL}${product.brand_id.logo}`
             })),
 
             products: productData.map(product => {
-                const productImages = product.media ? product.media.map(filename => MEDIA_URL + filename) : [];
+                const productImages = product.media ? product.media.map(filename => filename && MEDIA_URL + filename) : [];
 
                 return {
                     Product_id: product._id,
@@ -91,7 +91,7 @@ const getSearch = catchAsync(async (req, res) => {
                     brand: {
                         brand_id: product.brand_id.id,
                         name: product.brand_id.name,
-                        logo: `${MEDIA_URL}${product.brand_id.logo}`
+                        logo: product.brand_id.logo && `${MEDIA_URL}${product.brand_id.logo}`
 
                     },
                     price: {
