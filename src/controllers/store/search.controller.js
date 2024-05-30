@@ -4,7 +4,7 @@ const productModel = require("../../models/product.model");
 const { filters } = require("../../services/store/filter.service");
 const catchAsync = require("../../utils/catchAsync");
 const pick = require("../../utils/pick");
-
+const MEDIA_URL = process.env.MEDIA_URL;
 
 
 
