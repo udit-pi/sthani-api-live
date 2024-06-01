@@ -163,13 +163,13 @@ const getProduct = catchAsync(async (req, res) => {
 //   };
 // }));
 
-const brand_products = await Product.find({ brand_id: product.brand_id.id }).limit(10).exec();
+const brand_products = await Product.find({ brand_id: product.brand_id.id }).populate({path: 'brand_id'}).limit(10).exec();
 
 const similar_products_in_brand = await Promise.all (brand_products.map(async(product) => {
   return getProductBasic(product);
 }))
 
-const category_products = await Product.find({categories: { $all: product.categories }}).limit(10).exec();
+const category_products = await Product.find({categories: { $all: product.categories }}).populate({path: 'brand_id'}).limit(10).exec();
   
 const similar_products_in_category = await Promise.all (category_products.map(async(product) => {
   return getProductBasic(product);
