@@ -74,8 +74,9 @@ const getProducts = catchAsync(async (req, res) => {
 
 const getProduct = catchAsync(async (req, res) => {
   try {
-    const product = await productService.getProductById(req.params.productId);
-    const brand = await brandService.getBrandById(product.brand_id);
+    const product = await Product.findById(req.params.productId).populate({
+      path: 'brand_id',
+  });
     
     if (!product) {
       throw new ApiError(httpStatus.NOT_FOUND, 'Product not found');
@@ -87,7 +88,7 @@ const getProduct = catchAsync(async (req, res) => {
     //   discounted_percentage = parseFloat(percentage.toFixed(0));
     // }
 
-    let discounted_percentage =  calculateDiscountedPercentage(product.price,product.discounted_price ? product.discounted_price : 0)
+    
     // console.log(discounted_percentage)
 
 
@@ -104,19 +105,19 @@ const getProduct = catchAsync(async (req, res) => {
 // }
 
 
-function findOption(variantComponent, optionType) {
-  return options[optionType].find(option => variantComponent.toLowerCase().includes(option.toLowerCase())) || 'Undefined';
-}
+// function findOption(variantComponent, optionType) {
+//   return options[optionType].find(option => variantComponent.toLowerCase().includes(option.toLowerCase())) || 'Undefined';
+// }
 
-let media = []
-let images = await ProductMedia.find({product_id:product._id}).exec()
-// console.log('images',images);    
-matchingImages = images.filter(image => image.title === 'Media');
-matchingImages.forEach(image => {
-  media.push({
-    "url": image.file_name ? MEDIA_URL + image.file_name : ''
-  });
-});
+// let media = []
+// let images = await ProductMedia.find({product_id:product._id}).exec()
+// // console.log('images',images);    
+// matchingImages = images.filter(image => image.title === 'Media');
+// matchingImages.forEach(image => {
+//   media.push({
+//     "url": image.file_name ? MEDIA_URL + image.file_name : ''
+//   });
+// });
 
 
 // const transformedVariants =   await Promise.all (product.productVariants.map(async(variant) => {
@@ -162,89 +163,46 @@ matchingImages.forEach(image => {
 //   };
 // }));
 
-const brand_products = await Product.find({ brand_id: brand._id }).limit(10).exec();
+const brand_products = await Product.find({ brand_id: product.brand_id.id }).limit(10).exec();
 
 const similar_products_in_brand = await Promise.all (brand_products.map(async(product) => {
-const percent =  calculateDiscountedPercentage(product.price,product.discounted_price ? product.discounted_price : 0)
-
-let images = await ProductMedia.find({product_id:product._id}).exec()
-// console.log('images',images);    
-matchingImages = images.filter(image => image.title === 'Media');
-const image = matchingImages[0]
-
-
-  return {
-    id: product._id,
-    name: product.name,
-    image: image ? MEDIA_URL +  image.file_name  : '',
-    brand: {
-      brand_id: brand._id,
-      name: brand.name,
-      logo: brand.logo ? MEDIA_URL + brand.logo : ''
-    },
-    price: {
-      currency: "AED",
-      amount: product.discounted_price ? product.discounted_price: product.price,
-      original_amount: product.price,
-      discount_percentage: percent
-    }
-  }
+  return getProductBasic(product);
 }))
 
 const category_products = await Product.find({categories: { $all: product.categories }}).limit(10).exec();
   
 const similar_products_in_category = await Promise.all (category_products.map(async(product) => {
-const percent =  calculateDiscountedPercentage(product.price,product.discounted_price ? product.discounted_price : 0)
-
-let images = await ProductMedia.find({product_id:product._id}).exec()
-// console.log('images',images);    
-matchingImages = images.filter(image => image.title === 'Media');
-const image = matchingImages[0]
-
-
- return {
-   id: product._id,
-   name: product.name,
-   image: image ? MEDIA_URL +  image.file_name  : '',
-   brand: {
-      brand_id: brand._id,
-     name: brand.name,
-     logo: brand.logo ? MEDIA_URL + brand.logo : ''
-   },
-   price: {
-     currency: "AED",
-     amount: product.discounted_price ? product.discounted_price: product.price,
-     original_amount: product.price,
-     discount_percentage: percent
-   }
- }
+  return getProductBasic(product);
 }))
 
+const productImages = product.media ? product.media.map(filename => MEDIA_URL + filename) : [];
 
     const data = {
-       Product_id: product._id,
-       name: product.name,
+      Product_id: product._id,
+      name: product.name,
+      short_description: product.description_short,
+      image: productImages,
+
+      brand: {
+          brand_id: product.brand_id._id,
+          name: product.brand_id.name,
+          logo: `${MEDIA_URL}${product.brand_id.logo}`
+
+      },
+      price: {
+          currency: "AED",
+          amount: product.price,
+          original_amount: product.discounted_price,
+          discount_percentage: product.discounted_price ? Math.round(((product.price - product.discounted_price) / product.price) * 100) : 0
+      },
        sku: product.sku,
        description: product.description,
-       short_description: product.description_short,
        stock: product.stock,
        additional_descriptions: product.additional_descriptions,
-       brand: {
-        brand_id: brand._id,
-        name: brand.name,
-        logo: brand.logo ? MEDIA_URL +  brand.logo : '',
-        description: brand.description
-       },
-       price: {
-        currency: "AED",
-        amount: product.discounted_price ? product.discounted_price: product.price,
-        original_amount: product.price,
-        discounted_percentage: discounted_percentage
-
-       },
+       
        //options: options ,
        //variants: transformedVariants,
-       media: media,
+      
        similar_products_in_brand: similar_products_in_brand,
        similar_products_in_category: similar_products_in_category
     }
@@ -268,6 +226,31 @@ const image = matchingImages[0]
  
 
 });
+
+
+function getProductBasic(product){
+  const productImages = product.media ? product.media.map(filename => MEDIA_URL + filename) : [];
+
+                return {
+                    Product_id: product._id,
+                    name: product.name,
+                    short_description: product.description_short,
+                    image: productImages,
+
+                    brand: {
+                        brand_id: product.brand_id.id,
+                        name: product.brand_id.name,
+                        logo: `${MEDIA_URL}${product.brand_id.logo}`
+
+                    },
+                    price: {
+                        currency: "AED",
+                        amount: product.price,
+                        original_amount: product.discounted_price,
+                        discount_percentage: product.discounted_price ? Math.round(((product.price - product.discounted_price) / product.price) * 100) : 0
+                    }
+                };
+}
 
 
 
