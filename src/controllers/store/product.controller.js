@@ -92,11 +92,11 @@ const getProduct = catchAsync(async (req, res) => {
 
 
 
-    let options = {}
-     options = product.options?.reduce((acc, option) => {
-      acc[option.optionName + 's'] = option.options.map(opt => opt.value);
-      return acc;
-  }, {});
+  //   let options = {}
+  //    options = product.options?.reduce((acc, option) => {
+  //     acc[option.optionName + 's'] = option.options.map(opt => opt.value);
+  //     return acc;
+  // }, {});
   
  
 //   function findOption(variantComponent, optionType) {
@@ -119,53 +119,53 @@ matchingImages.forEach(image => {
 });
 
 
-const transformedVariants =   await Promise.all (product.productVariants.map(async(variant) => {
-  const properties = {};
+// const transformedVariants =   await Promise.all (product.productVariants.map(async(variant) => {
+//   const properties = {};
  
-  // console.log(variant.variantName)
-  // console.log(matchingImages)
+//   // console.log(variant.variantName)
+//   // console.log(matchingImages)
 
  
-  const matchingImage = await images.find(image => image.title === variant.variantName);
+//   const matchingImage = await images.find(image => image.title === variant.variantName);
    
-     if (matchingImage) {
-      media.push({
-        "url": matchingImage.file_name ? MEDIA_URL + matchingImage.file_name : '',
-        "variantId": variant._id
-      });
-    } 
+//      if (matchingImage) {
+//       media.push({
+//         "url": matchingImage.file_name ? MEDIA_URL + matchingImage.file_name : '',
+//         "variantId": variant._id
+//       });
+//     } 
     
      
 
-  // Iterate through options and find matching properties
-  Object.keys(options).forEach(optionType => {
-      const matchingOption = findOption(variant.variantName, optionType);
-      if (matchingOption !== 'Undefined') {
-          properties[optionType.slice(0, -1)] = matchingOption; 
-      }
-  });
+//   // Iterate through options and find matching properties
+//   Object.keys(options).forEach(optionType => {
+//       const matchingOption = findOption(variant.variantName, optionType);
+//       if (matchingOption !== 'Undefined') {
+//           properties[optionType.slice(0, -1)] = matchingOption; 
+//       }
+//   });
 
-  let discount_percent =  calculateDiscountedPercentage(variant.variantPrice,variant.variantDiscountedPrice)
+//   let discount_percent =  calculateDiscountedPercentage(variant.variantPrice,variant.variantDiscountedPrice)
 
   
-  return {
-      variantId: variant._id,
-      ...properties,
-      price: {
-          currency: "AED",
-          amount: variant.variantDiscountedPrice ?  variant.variantDiscountedPrice : variant.variantPrice,
-          original_amount: variant.variantPrice,
-          discount_percentage: discount_percent
-      },
-      stock: variant.variantStock,
-       image: matchingImage.file_name ? MEDIA_URL +  matchingImage.file_name : ''
-  };
-}));
+//   return {
+//       variantId: variant._id,
+//       ...properties,
+//       price: {
+//           currency: "AED",
+//           amount: variant.variantDiscountedPrice ?  variant.variantDiscountedPrice : variant.variantPrice,
+//           original_amount: variant.variantPrice,
+//           discount_percentage: discount_percent
+//       },
+//       stock: variant.variantStock,
+//        image: matchingImage.file_name ? MEDIA_URL +  matchingImage.file_name : ''
+//   };
+// }));
 
 const brand_products = await Product.find({ brand_id: brand._id }).limit(10).exec();
 
 const similar_products_in_brand = await Promise.all (brand_products.map(async(product) => {
-   const percent =  calculateDiscountedPercentage(product.price,product.discounted_price ? product.discounted_price : 0)
+const percent =  calculateDiscountedPercentage(product.price,product.discounted_price ? product.discounted_price : 0)
 
 let images = await ProductMedia.find({product_id:product._id}).exec()
 // console.log('images',images);    
@@ -194,7 +194,7 @@ const image = matchingImages[0]
 const category_products = await Product.find({categories: { $all: product.categories }}).limit(10).exec();
   
 const similar_products_in_category = await Promise.all (category_products.map(async(product) => {
-  const percent =  calculateDiscountedPercentage(product.price,product.discounted_price ? product.discounted_price : 0)
+const percent =  calculateDiscountedPercentage(product.price,product.discounted_price ? product.discounted_price : 0)
 
 let images = await ProductMedia.find({product_id:product._id}).exec()
 // console.log('images',images);    
@@ -222,11 +222,11 @@ const image = matchingImages[0]
 
 
     const data = {
-       id: product._id,
+       Product_id: product._id,
        name: product.name,
        sku: product.sku,
        description: product.description,
-       description_short: product.description_short,
+       short_description: product.description_short,
        stock: product.stock,
        additional_descriptions: product.additional_descriptions,
        brand: {
@@ -242,8 +242,8 @@ const image = matchingImages[0]
         discounted_percentage: discounted_percentage
 
        },
-       options: options ,
-       variants: transformedVariants,
+       //options: options ,
+       //variants: transformedVariants,
        media: media,
        similar_products_in_brand: similar_products_in_brand,
        similar_products_in_category: similar_products_in_category
