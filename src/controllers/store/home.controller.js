@@ -24,15 +24,14 @@ const calculateDiscountedPercentage = (price,discountValue) => {
 const setProduct = (product, productImage, brand) => {
   try {
     const percent =  calculateDiscountedPercentage(product.price,product.discounted_price ? product.discounted_price : 0)
-
+    const productImages = product.media ? product.media.map(filename => MEDIA_URL + filename) : [];
     let productData = {}
     productData = {
+      
       id: product.id,
       name: product.name,
-      image: productImage?.file_name
-        ? MEDIA_URL + productImage.file_name
-        : "",
-      brand: {
+      image: productImages,
+      brand: { 
         brand_id: brand._id,
         name: brand.name,
         logo:  brand.logo ? MEDIA_URL + brand.logo : ""
