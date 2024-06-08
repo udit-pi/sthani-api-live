@@ -7,8 +7,9 @@ exports.filters=(productsQuery, query = {}, filterData = {})=>{
 const { sort,page} = query;
 const {brand_ids,category_ids,price_min,price_max}=filterData
 
-console.log(category_ids)
- 
+console.log("---------")
+console.log(brand_ids)
+console.log("---------")
 let sortedProducts = [...productsQuery];
 
 const brandIdsSet = new Set(brand_ids);
@@ -17,11 +18,10 @@ const categoyIdsSet = new Set(category_ids);
 
 // Filter products based on brand_ids
 if (brandIdsSet.size > 0) {
+    console.log("filter brands")
+    console.log(brandIdsSet)
     // sortedProducts = sortedProducts.filter(product => brandIdsSet.has(product.brand_id.toString()));
-    sortedProducts = sortedProducts.filter(product => product.brand_id && brandIdsSet.has(product.brand_id.toString()));
-
-
-
+    sortedProducts = sortedProducts.filter(product => product.brand_id && brandIdsSet.has(product.brand_id._id.toString()));
 }
 if (categoyIdsSet.size > 0) {
 
