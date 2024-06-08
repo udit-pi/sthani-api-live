@@ -40,7 +40,7 @@ const getFiltercategory = catchAsync(async (req, res) => {
         path: 'brand_id',
     });
 
-    const filterData = req.body.filter
+    const filterData = req.body.filters
     const query = pick(req.query, ['sort', 'page']);
     const { sort } = query;    
     
