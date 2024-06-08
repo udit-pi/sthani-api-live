@@ -43,7 +43,7 @@ const setProduct = (product, productImage, brand) => {
       price: {
         amount: product.discounted_price ? product.discounted_price: product.price,
         original_amount: product.price,
-        discounted_percentage: percent,
+        discount_percentage: percent,
       },
     };
     return productData;
