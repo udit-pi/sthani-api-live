@@ -265,14 +265,15 @@ const getwidgets = catchAsync(async (req, res) => {
           await Promise.all(
             widget.items?.map(async (item) => {
               const brand = await Brand.findById(item.brand);
-             
+              console.log(brand);
+              const coverImage = brand.images.find(img => img.label === 'cover');
               brandObject = {
                 id: brand._id,
                 name: brand.name,
                 tag: item.tag,
                 description: item.description,
-                logo: brand.logo ? MEDIA_URL + brand.logo: "",
-                banner: brand.banner ? MEDIA_URL + brand.banner : "",
+                logo: brand.logo ? `${MEDIA_URL}${brand.logo}` : "",
+                cover: coverImage ? `${MEDIA_URL}${coverImage.value}` : ""
               };
               await Promise.all(
                 item.products?.map(async (product) => {
