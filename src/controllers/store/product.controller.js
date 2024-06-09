@@ -186,8 +186,8 @@ const productImages = product.media ? product.media.map(filename => MEDIA_URL + 
       brand: {
           brand_id: product.brand_id._id,
           name: product.brand_id.name,
-          logo: `${MEDIA_URL}${product.brand_id.logo}`
-
+          logo: `${MEDIA_URL}${product.brand_id.logo}`,
+          color: product.brand_id.color
       },
       price: {
           currency: "AED",
@@ -240,7 +240,8 @@ function getProductBasic(product){
                     brand: {
                         brand_id: product.brand_id.id,
                         name: product.brand_id.name,
-                        logo: `${MEDIA_URL}${product.brand_id.logo}`
+                        logo: `${MEDIA_URL}${product.brand_id.logo}`,
+                        color: product.brand_id.color
 
                     },
                     price: {
