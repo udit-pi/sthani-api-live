@@ -14,7 +14,8 @@ const createBrand = {
   //     })
   // ),
    website: Joi.string().uri().allow(''),
-  sort_order: Joi.number()
+  sort_order: Joi.number(),
+  color: Joi.string().regex(/^#([0-9A-F]{3}){1,2}$/i).optional()
   }),
 };
 
@@ -58,6 +59,7 @@ const updateBrand = {
     //     })
     // ),
     website: Joi.string().allow(''),
+    color: Joi.string().regex(/^#([0-9A-F]{3}){1,2}$/i).optional()
     })
     .min(1),
 };
