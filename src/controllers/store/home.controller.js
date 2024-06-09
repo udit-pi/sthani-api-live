@@ -279,7 +279,7 @@ const getwidgets = catchAsync(async (req, res) => {
                 item.products?.map(async (product) => {
                   const prod = await Product.findById(product.value);
                
-                 // const brand = await Brand.findById(prod.brand_id);
+                  const brand = await Brand.findById(prod.brand_id);
                  
                   const productImage = await ProductMedia.findOne({
                     product_id: product.value,
