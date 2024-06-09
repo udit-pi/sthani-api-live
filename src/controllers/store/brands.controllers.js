@@ -33,6 +33,18 @@ const getFilterBrands=catchAsync(async(req,res)=>{
     //     console.log("Product media is not defined or not an array");
     //   }
 // console.log( "hello", product)
+console.log(brand);
+
+let brand_images;
+if (brand.images && brand.images.length > 0) {
+     brand_images = brand.images.reduce((acc, img) => {
+        acc[img.label] = `${MEDIA_URL}${img.value}`;
+        return acc;
+    }, {});
+
+    console.log(brand_images);
+}
+
     const response = {
         status: 200,
         message: 'Success',
@@ -73,6 +85,9 @@ const getFilterBrands=catchAsync(async(req,res)=>{
         }
     };
 
+    if (brand_images) {
+        Object.assign(response.data, brand_images);
+    }
     res.status(200).json(response)
 })
 
