@@ -25,6 +25,7 @@ const brandSchema = mongoose.Schema(
       type: String,
       required: false,
       trim: true,
+      default: '#E21556',
       validate: {
         validator: function(v) {
           return /^#([0-9A-F]{3}){1,2}$/i.test(v);  // Regex to validate hex color
