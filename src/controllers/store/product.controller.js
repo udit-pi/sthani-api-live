@@ -177,6 +177,17 @@ const similar_products_in_category = await Promise.all (category_products.map(as
 
 const productImages = product.media ? product.media.map(filename => MEDIA_URL + filename) : [];
 
+let brand_images;
+if (product.brand_id.images && product.brand_id.images.length > 0) {
+     brand_images = product.brand_id.images.reduce((acc, img) => {
+        acc[img.label] = `${MEDIA_URL}${img.value}`;
+        return acc;
+    }, {});
+
+   
+}
+
+
     const data = {
       Product_id: product._id,
       name: product.name,
@@ -186,6 +197,8 @@ const productImages = product.media ? product.media.map(filename => MEDIA_URL + 
       brand: {
           brand_id: product.brand_id._id,
           name: product.brand_id.name,
+          description: product.brand_id.description,
+          
           logo: `${MEDIA_URL}${product.brand_id.logo}`,
           color: product.brand_id.color
       },
@@ -206,7 +219,13 @@ const productImages = product.media ? product.media.map(filename => MEDIA_URL + 
        similar_products_in_brand: similar_products_in_brand,
        similar_products_in_category: similar_products_in_category
     }
+    
+
+    if (brand_images) {
+      Object.assign(data.brand, brand_images);
+    }
     console.log(data);
+    
     return res.json({status: 200, data: data})
     
   // res.send({
