@@ -34,6 +34,7 @@ const setProduct = (product, productImage, brand) => {
       brand: { 
         brand_id: brand._id,
         name: brand.name,
+        color: brand.color,
         logo:  brand.logo ? MEDIA_URL + brand.logo : ""
       },
       link: {
@@ -79,6 +80,7 @@ const getwidgets = catchAsync(async (req, res) => {
                 brand: {
                   brand_id: brand._id,
                   name: brand.name,
+                  color: brand.color,
                   logo: brand.logo ? MEDIA_URL + brand.logo : "",
                 },
                 cta: {
@@ -143,6 +145,7 @@ const getwidgets = catchAsync(async (req, res) => {
               brands.push({
                 brand_id: brand._id,
                 name: brand.name,
+                color: brand.color,
                 logo: brand.logo ? MEDIA_URL + brand.logo: "",
                 link: {
                   destination: "brand",
@@ -272,6 +275,7 @@ const getwidgets = catchAsync(async (req, res) => {
                 name: brand.name,
                 tag: item.tag,
                 description: item.description,
+                color: brand.color,
                 logo: brand.logo ? `${MEDIA_URL}${brand.logo}` : "",
                 cover: coverImage ? `${MEDIA_URL}${coverImage.value}` : ""
               };

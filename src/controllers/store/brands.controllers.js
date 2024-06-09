@@ -55,7 +55,7 @@ if (brand.images && brand.images.length > 0) {
             slideshow:productSlideshow,
             description:brand.description,
             brand_logo:`${MEDIA_URL}${brand.logo}`,
-           
+            brand_color: brand.color,
 
             products: products.map(product => {
                 const productImages = product.media ? product.media.map(filename => MEDIA_URL + filename) : [];
