@@ -46,6 +46,7 @@ if(slide_show){
     logo: logo&&logo,
     images:images&& images,
     slug: slug,
+    color: req.body.color
   });
   const newBrand = brand.save();
   return newBrand;
@@ -232,7 +233,7 @@ if(!brand.slide_show){
   
   brand.description = req.body.description 
   brand.website =  req.body.website
-  
+  brand.color = req.body.color
   brand.slug = slug
   await brand.save()
 
