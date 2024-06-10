@@ -13,7 +13,8 @@ const productSchema = mongoose.Schema(
     sku: {
       type: String,
       required: false,
-      unique: false
+      unique: false,
+      default: ""
      
     },
     name: {
@@ -38,37 +39,7 @@ const productSchema = mongoose.Schema(
       required: false,
       trim: true,
     },
-    
-    // additional_descriptions: {
-    //     type: [
-    //         {
-    //             label: {
-    //               type: String,
-    //               required: false,
-    //             },
-    //             value: {
-    //               type: String,
-    //               required: false,
-    //             },
-    //           },
-    //     ],
-    //     required: false
-    // },
-    // additional_properties: {
-    //     type: [
-    //         {
-    //             label: {
-    //               type: String,
-    //               required: false,
-    //             },
-    //             value: {
-    //               type: String,
-    //               required: false,
-    //             },
-    //           },
-    //     ],
-    //     required: false
-    // },
+   
     weight: {
       type: Number,
       required: false,
@@ -129,29 +100,31 @@ const productSchema = mongoose.Schema(
         ref: "Category",
       },
     ],
-
+    
     product_variants: {
       type: [
         {
-          variantId: {
-            type: mongoose.Schema.Types.ObjectId,
-            required: false,
-          },
-          variantName: {
+          _id: mongoose.Schema.Types.ObjectId,
+          name: {
             type: String,
             required: false,
           },
-          variantPrice: {
+          price: {
             type: Number,
             required: false,
           },
-          variantDiscountedPrice: {
+          discounted_price: {
             type: Number,
             required: false,
           },
-          variantStock: {
+          stock: {
             type: Number,
             required: false,
+          },
+          sku: {
+            type: String,
+            required: false,
+            default: ""
           },
 
           image: {
