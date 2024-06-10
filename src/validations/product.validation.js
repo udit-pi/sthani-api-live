@@ -53,14 +53,15 @@ const createProduct = {
         .optional()
         .allow(null),
 
-      productVariants: Joi.array()
+        product_variants: Joi.array()
         .items(
           Joi.object({
             image: Joi.any().optional().allow(null),
-            variantName: Joi.string().allow(""),
-            variantPrice: Joi.number().required(),
-            variantDiscountedPrice: Joi.number().optional().allow(null),
-            variantStock: Joi.number().optional().allow(null),
+            name: Joi.string().required(),
+            price: Joi.number().required(),
+            discounted_price: Joi.number().optional().allow(null),
+            stock: Joi.number().optional().allow(null),
+            sku: Joi.string().optional().allow(null),
           })
         )
         .optional()

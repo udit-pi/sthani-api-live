@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 const httpStatus = require("http-status");
 const { Product, Brand, Category, ProductMedia } = require("../models");
 const ApiError = require("../utils/ApiError");
@@ -132,6 +134,92 @@ async function handleFiles(files) {
   // return images;
 }
 
+
+const saveProduct = async (productBody, req, productId = null) => {
+  try {
+    const product = productId ? await Product.findById(productId).exec() : new Product();
+    if (!product) {
+      throw new Error('Product not found.');
+    }
+
+    // Generate slug only if it's a new product or name has changed
+    if (!productId || product.name !== productBody.name) {
+      product.slug = generateSlug(productBody.name);
+    }
+
+    // Handle media files
+    if (req.files['media[]']) {
+      const medias = uploadMultipleFile(req.files['media[]'])
+      const mediasValues = medias.map(item => item.value);
+      product.media = [...(productBody.media || []), ...mediasValues];
+    } else {
+      product.media = productBody.media || [];
+    }
+
+    // Assign all other properties
+    const fields = [
+      'brand_id',
+      'sku',
+      'name',
+      'description_short',
+      'description',
+      'additional_descriptions',
+      'weight',
+      'length',
+      'width',
+      'height',
+      'quantity_min',
+      'stock',
+      'price',
+      'discounted_price',
+      'cost',
+      'published',
+      'categories',
+      'options'
+    ];
+    fields.forEach(field => {
+      if (productBody[field] !== undefined && productBody[field] !== "") {
+        product[field] = productBody[field];
+      }
+    });
+
+    // // Handle product variants
+    // product.product_variants = productBody.productVariants ? productBody.productVariants.map(variant => {
+    //   if (!variant._id) {
+    //     return { ...variant, _id: new mongoose.Types.ObjectId() }; // Assign new _id for new variants
+    //   }
+    //   return variant; // Keep existing variants as is
+    // }) : [];
+
+    //console.log('Files uploaded', req.files);
+
+    // Handle variant images and other data
+    if (productBody.productVariants) {
+      product.product_variants = await Promise.all(productBody.productVariants.map(async (variant, index) => {
+        const variantKey = `productVariants[${index}][image]`;
+        if (req.files[variantKey]) {  // Check if there's a file for this variant
+          console.log(variant.name, req.files[variantKey]); // Log to verify the structure
+          const file = req.files[variantKey];  // Directly use the file object
+          variant.image = uploadSingleFile(file);  // Upload the file and get the filename
+        }
+
+        if (!variant._id) variant._id = new mongoose.Types.ObjectId();  // Assign new _id if it's a new variant
+
+        return variant;
+      }));
+    }
+
+
+    console.log("Product to be saved:", product);
+    await product.save();
+    return product;
+  } catch (err) {
+    console.error("Error processing product:", err);
+    throw err; // Rethrow to handle the error outside this function
+  }
+};
+
+
 const createProduct = async (productBody, req) => {
   //  console.log(req_files)
   //  console.log(productBody)
@@ -141,14 +229,14 @@ const createProduct = async (productBody, req) => {
     const cats = productBody.category?.map((cat) => {
       return cat.value;
     });
-    if(req.files['media[]']){
+    if (req.files['media[]']) {
       var medias = uploadMultipleFile(req.files['media[]'])
       var mediasValues = medias.map(item => item.value);
       if (!productBody.media || !Array.isArray(productBody.media)) {
         productBody.media = []; // Initialize slide_show as an array if it doesn't exist
-    }
+      }
 
-      var newMedia=[...productBody.media,...mediasValues]
+      var newMedia = [...productBody.media, ...mediasValues]
     }
     const product = new Product({
       brand_id: productBody.brand_id,
@@ -168,7 +256,7 @@ const createProduct = async (productBody, req) => {
 
       stock: productBody.stock,
       // reviews_rating: productBody.reviews_rating,
-      media:newMedia,
+      media: newMedia,
       price: productBody.price,
       discounted_price: productBody.discounted_price,
 
@@ -180,80 +268,17 @@ const createProduct = async (productBody, req) => {
       // sales_count to be calculated
     });
 
-   let mediaItems = productBody.mediaItems
-  
-   await product.save();
+    let mediaItems = productBody.mediaItems
 
-   return product;
-    if (await product.save()) {
-     
-      // const mediaLength = productBody.mediaItems.length();
-  
-      // if (req_files) {
-       
-      //   Object.values(req_files).forEach(async(file, index) => {
-      //     if( mediaItems[index].file_name =  file.originalFilename) {
-      //       // console.log("File:", file.originalFilename);
-      //       const fileName = Date.now() + file.originalFilename;
-      //       const file_path = path.join(uploadFolder, fileName);
-      //       fs.renameSync(file.filepath, file_path); // Move file to desired location
-        
-      //       const fileSize = file.size;
-      //       const fileExtension = fileName.split(".").pop().toLowerCase();
-                   
-      //       mediaItems[index].file_name = fileName
-      //     }
-         
-         
-      // })
-       
-      // }
-      if (req_files) {
-        const fileKeys = Object.keys(req_files);
-      
-        for (const [index, key] of fileKeys.entries()) {
-          const file = req_files[key];
-          if (mediaItems[index].file_name === file.originalFilename) {
-            const fileName = Date.now() + file.originalFilename;
-            const file_path = path.join(uploadFolder, fileName);
-      
-            try {
-              await fs.rename(file.filepath, file_path); // Move file to desired location
-              const fileSize = file.size;
-              const fileExtension = fileName.split('.').pop().toLowerCase();
-      
-              mediaItems[index].file_name = fileName;
-            } catch (err) {
-              console.error('Error moving file:', err);
-            }
-          }
-        }
-      }
-    
-      console.log(mediaItems)
-    
+    await product.save();
 
-      // product.media = [...mediaItems];
-      await product.updateOne({ $set: {media: mediaItems } });
+    return product;
 
-     console.log('media',product.media);  
-  //  await Promise.all(
-  //       cats?.map(async (cat) => {
-  //         const category = await Category.findById(cat);
-  //         if (category) {
-  //           category.products.push(product._id);
-  //           await category.save(); // Save the category to persist changes
-  //         } else {
-  //           console.log(`Category with id ${cat} not found`);
-  //         }
-  //       })
-  //     );
-     };
 
 
 
   } catch (err) {
-     return err;
+    return err;
   }
 };
 
@@ -266,51 +291,64 @@ const queryProducts = async (filter, options) => {
 };
 
 const getProductById = async (id) => {
-  const product = await Product.findById(id).exec();
+  const product = await Product.findById(id)
+    // .populate({
+    //   path: 'categories',
+    //   select: 'id name',
+    //   model: 'Category'
+    // })
+    .populate({
+      path: 'brand_id',
+      select: 'name',
+      model: 'Brand'
+    })
+    .exec();
   // const brand = await Brand.findById(product.brand_id);
   // console.log(brand);
-//  console.log(product)
+  //  console.log(product)
   return product;
 };
 
 const updateProductById = async (productId, productBody, req) => {
-// console.log(req.files)
+
 
   try {
     const slug = generateSlug(productBody.name);
 
-    const cats = productBody.category?.map((cat) => {
-      return cat.value;
-    });
+    // const cats = productBody.category?.map((cat) => {
+    //   return cat.value;
+    // });
+
 
     const product = await Product.findById(productId).exec();
-console.log("ProductBody",productBody)
-    if(req.files['media[]']){
+
+
+    if (req.files['media[]']) {
       var medias = uploadMultipleFile(req.files['media[]'])
       var mediasValues = medias.map(item => item.value);
       if (!productBody.media || !Array.isArray(productBody.media)) {
         productBody.media = []; // Initialize slide_show as an array if it doesn't exist
-    }
-
-      product.media=[...productBody.media,...mediasValues]
-    }else{
-      if(!productBody.media){
-        product.media=[]
-      }else{
-        product.media=productBody.media
       }
-      
+
+      product.media = [...productBody.media, ...mediasValues]
+    } else {
+      if (!productBody.media) {
+        product.media = []
+      } else {
+        product.media = productBody.media
+      }
+
     }
 
 
     product.brand_id = productBody.brand_id;
     product.sku = productBody.sku;
     product.name = productBody.name;
-    product.slug = slug;
+    // product.slug = slug;
     product.description_short = productBody.description_short;
     product.description = productBody.description;
     product.additional_descriptions = productBody.additional_descriptions;
- 
+
     product.weight = productBody.weight;
     product.length = productBody.length;
     product.width = productBody.width;
@@ -326,282 +364,71 @@ console.log("ProductBody",productBody)
 
     product.cost = productBody.cost;
     product.published = productBody.published;
-    product.categories = cats;
+    product.categories = productBody.categories;
 
     product.options = productBody.options;
+    //product.product_variants = productBody.productVariants;
 
-  
+    product.product_variants = productBody.productVariants.map(variant => {
+      // Check if the variant has an _id, if not, it's a new variant
+      if (!variant._id) {
+        return { ...variant, _id: new mongoose.Types.ObjectId() }; // Explicitly setting _id for new variant
+      }
+      return variant; // Return existing variants as is
+    });
 
-  await product.save()
- 
-   return product
-    // product.product_variants = productBody.productVariants;
-    // console.log(product.product_variants)
-    // console.log(productBody.productVariants)
 
-   
-    // if (productBody.deletedImages?.length > 0) {
-    //   // console.log("inside deleted image");
+    console.log("in api ---")
+    console.log(product);
 
-    //   // console.log(media_images)
+    await product.save()
 
-    //    const deleteImagePromise =  productBody.deletedImages?.map(async (file_name) => {
-    //       const imageName = file_name;
-    //       // console.log(imageName)
-    //       const imagePath = path.join(uploadFolder, imageName);
-    //       fs.access(imagePath, fs.constants.F_OK, (err) => {
-    //         if (err) {
-    //           console.error("File does not exist:", imagePath);
-    //         } else {
-    //           fs.unlink(imagePath, (err) => {
-    //             if (err) {
-    //               console.error("Error deleting image:", err);
-    //             } else {
-    //               console.log("Image deleted successfully:", imagePath);
-    //             }
-    //           });
-    //         }
-    //       });
-    //       await product.updateOne({
-    //         $pull: { media: { file_name: file_name } },
-    //       });
-    //     })
-     
-    //     await Promise.all(deleteImagePromise);
-    //   //  console.log('product', product.media.images);
-    // }
+    return product
 
-   
 
-    // if (productBody.oldImageIndex?.length > 0) {
-    //   let variant_images = product.media?.filter(
-    //     (media) => media.variant_id !== ""
-    //   );
 
-      
-    //   const oldImageReplacePromise = productBody.oldImageIndex?.map(async (image, index) => {
-    //       // console.log(variant_images)
-    //       const img = variant_images.find(
-    //         (img) => img.variant_id === image.variant_id
-    //       );
-    //       console.log('img',img);
-    //       if (req_files ) {
-    //         if (img) {
-    //           const imageName = img.file_name;
-
-    //           const imagePath = path.join(uploadFolder, imageName);
-    //           //  console.log(imagePath);
-    //           if (imagePath) {
-    //             fs.access(imagePath, fs.constants.F_OK, (err) => {
-    //               if (err) {
-    //                 // File does not exist
-    //                 console.error("File does not exist:", imagePath);
-    //               } else {
-    //                 // File exists, proceed to delete
-    //                 fs.unlink(imagePath, (err) => {
-    //                   if (err) {
-    //                     console.error("Error deleting image:", err);
-    //                   } else {
-    //                     console.log("Image deleted successfully:", imagePath);
-    //                   }
-    //                 });
-    //               }
-    //             });
-    //           }
-    //           const updatedFiles = req_files[`oldVariantImages[]`];
-
-    //           if (updatedFiles) {
-    //             // Check if files is an array
-    //             if (Array.isArray(updatedFiles)) {
-    //               console.log("array");
-    //               // Multiple files uploaded
-    //               updatedFiles.forEach(async (file) => {
-    //                 if (file.originalFilename === image.name) {
-    //                   const fileSize = file.size;
-
-    //                   const variantImage = uploadSingleFile(file);
-
-    //                   img.file_name = variantImage;
-    //                   img.file_size = fileSize;
-    //                 }
-    //                 console.log(img);
-    //               });
-    //             } else {
-    //               console.log("single file");
-    //               const fileSize = updatedFiles.size;
-
-    //               const variantImage = uploadSingleFile(updatedFiles);
-
-    //               img.file_name = variantImage;
-    //               img.file_size = fileSize;
-    //             }
-    //           }
-    //         }
-    //         await Product.updateOne(
-    //           { _id: product._id, "media.variant_id": img.variant_id },
-    //           { $set: { "media.$": img } }
-    //         );
-    //         // variant_images[image.index] = img;
-    //         // product.media.variant_images = variant_images;
-    //         // product.save()
-    //       }
-    //     })
-    //     await Promise.all(oldImageReplacePromise);
-    // }
-    
-    // console.log('after oldimageindex')
-    // const files = req_files["files[]"];
-    // // console.log(files);
-
-    // if (files) {
-    //   let images = [];
-    //   if (files) {
-    //     images = await handleFiles(product, files);
-
-    //     product.media = [...product.media, ...images];
-    //     //  console.log('product_media', product.media)
-    //     await product.updateOne({ $set: { media: product.media } });
-    //   }
-    // }
-    // console.log('after files')
-    // if (productBody.productVariantsNew) {
-     
-    //   // remove old variant images
-    //   const promises =  product.product_variants?.map(async (variant) => {
-       
-    //      const img = product.media.find((item) => {
-    //       console.log('item.variant_id:', item.variant_id);
-    //       console.log('item.variant_id type:', typeof item.variant_id);
-    //       console.log('variant._id:', variant._id);
-    //       console.log('variant._id type:', typeof variant._id);
-    //       return String(item.variant_id) === String(variant._id);
-    //     });
-    
-    //     console.log('img:', img);
-     
-    //     if (img) {
-          
-    //       const imageName = img.file_name;
-
-    //       const imagePath = path.join(uploadFolder, imageName);
-    //       //  console.log(imagePath);
-    //       if (imagePath) {
-    //         fs.access(imagePath, fs.constants.F_OK, (err) => {
-    //           if (err) {
-    //             // File does not exist
-    //             console.error("File does not exist:", imagePath);
-    //           } else {
-    //             // File exists, proceed to delete
-    //             fs.unlink(imagePath, (err) => {
-    //               if (err) {
-    //                 console.error("Error deleting image:", err);
-    //               } else {
-    //                 console.log("Image deleted successfully:", imagePath);
-    //               }
-    //             });
-    //           }
-    //         });
-    //       }
-          
-    //     }
-    //     await product.updateOne({
-    //       $pull: { media: { variant_id: variant._id } },
-    //     });
-    //     //
-    //   });
-    //   await Promise.all(promises);
-    //   console.log('media after delete', product.media)
-
-    //   product.product_variants = productBody.productVariantsNew;
-    //   if(product.save()) {
-    //     const variant_images = [];
-    //     const imageUploadPromises =  product.product_variants?.map(async (variant, index) => {
-    //        console.log('product new variant',variant)
-    //       const imageFile = req_files[`productVariantsNew[${index}][image]`];
-  
-    //       if (imageFile) {
-    //         // console.log("inside variant image");
-  
-    //         const fileSize = imageFile.size;
-    //         const variantImage = await uploadSingleFile(imageFile); // Ensure this returns a file name
-    //         const fileExtension = variantImage.split(".").pop().toLowerCase();
-  
-    //         const file_type = imageExtensions.includes(fileExtension)
-    //           ? "image"
-    //           : "video";
-  
-    //         // const mediaBody = {
-    //         //   disk_name: "media",
-    //         //   file_name: variantImage,
-    //         //   product_id: product._id,
-    //         //   title: variant.variantName, // Save title correctly
-    //         //   filesize: fileSize,
-    //         //   type: file_type,
-    //         // };
-  
-    //         variant_images.push({
-    //           variant_id: variant._id,
-    //           file_name: variantImage,
-  
-    //           file_size: fileSize,
-    //           file_type: file_type,
-    //         });
-            
-    //         // const media = await createProductMedia(mediaBody);
-    //         // console.log(media);
-    //       }
-    //     });
-
-    //     await Promise.all(imageUploadPromises);
-    //     console.log('variant image', variant_images)
-
-       
-      
-    //     product.media = [...product.media, ...variant_images];
-    //     // product.media = [...product.media, ...variant_images];
-       
-    //     console.log('product media',product.media)
-    //     //  await product.save()
-    //     await product.updateOne({ $set: {media: product.media } });
-    //   }
-    
-    // }
-    // console.log('after productvariantnew')
-
-   
-    //   cats?.map(async (cat) => {
-    //     const category = await Category.findById(cat);
-    //     if (category) {
-    //       category.products.push(product._id);
-    //       await category.save(); // Save the category to persist changes
-    //     } else {
-    //       console.log(`Category with id ${cat} not found`);
-    //     }
-    //   })
-   
-
-    // console.log('reached here')
-    // if(await product.save()) {
-    //   const updated_product = product;
-    //    console.log(updated_product);
-    // }
-
-       
-   
   } catch (err) {
+    console.log(err);
     return err;
   }
 };
 
+const deleteProductFiles = (mediaFiles) => {
+  mediaFiles.forEach(fileName => {
+    const filePath = path.join(uploadFolder, fileName);
+    fs.unlink(filePath, (err) => {
+      if (err) {
+        console.error(`Failed to delete file: ${filePath}`, err);
+      } else {
+        console.log(`Successfully deleted file: ${filePath}`);
+      }
+    });
+  });
+};
+
 const deleteProductById = async (productId) => {
-  const product = await getProductById(productId);
-  if (!product) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Product not found");
+
+  try {
+    const product = await getProductById(productId);
+    if (!product) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Product not found");
+    }
+
+    // Check if there are any associated media files to delete
+    if (product.media && product.media.length > 0) {
+      deleteProductFiles(product.media);  // Delete associated files
+    }
+
+    await product.remove();
+    console.log('Product and its files have been deleted successfully.');
+  } catch (error) {
+    console.error('Failed to delete product:', error);
+    throw error;  // Rethrow to handle the error in the calling function or to respond to a client request
   }
-  await product.remove();
 };
 
 module.exports = {
+  saveProduct,
   createProduct,
   queryProducts,
   getProductById,

@@ -89,7 +89,7 @@ const findProperties = async (variants) => {
         }
       }
     }
-    
+
     return property_ids;
   }
 };
@@ -109,19 +109,16 @@ const getImageById = async (imageIdToFind) => {
 
 const createProduct = catchAsync(async (req, res) => {
   try {
-   
-    
-   
     // create new product
-    const product = await productService.createProduct(req.body,req);
-   console.log(product);
-    if(product) {
-      return res.status(201).json({status: 201, message: 'Product created successfully!',product: product });
+    const product = await productService.saveProduct(req.body, req);
+    
+    if (product) {
+      return res.status(201).json({ status: 201, message: 'Product created successfully!', product: product });
     } else {
-      return  res.status(400).json({status: 400, message: 'Error creating product' });
+      return res.status(400).json({ status: 400, message: 'Error creating product' });
     }
 
-   
+
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -145,56 +142,33 @@ const getProduct = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Product not found');
   }
 
- 
-  // const brand = await Brand.findById(product.brand_id);
-
-  // const productVariant = await ProductVariant.find({ product_id: product._id }).exec();
-  // console.log(productVariant)
-
-  // const productMedia = await ProductMedia.find({ product_id: product._id }).exec();
-
-  // const properties = await Property.find().exec();
-  //  console.log(properties)
-  //  console.log(productVariant)
-  // let variantProperties = [];
-  // if (productVariant && properties) {
-  //   variantProperties = productVariant
-  //     .map((prop) => {
-  //       // console.log('Property ID:', prop._id);
-  //       return properties.filter((item) => prop.property_id.includes(item._id));
-  //     })
-  //     .flat();
-  // }
-
-  // console.log('Variant Properties:', variantProperties);
-
   res.send({
     product: product,
     // brand: brand,
-   
-    
-  
+
+
+
   });
 });
 
 const updateProduct = catchAsync(async (req, res) => {
- 
-console.log("hello")
-  try {
-        
-    const product = await productService.updateProductById(req.params.productId,req.body,req);
 
-    if(product) {
-      return res.status(200).json({status: 200, message: 'Product updated successfully!' });
+  
+  try {
+
+    const product = await productService.saveProduct( req.body, req, req.params.productId);
+
+    if (product) {
+      return res.status(200).json({ status: 200, message: 'Product updated successfully!' });
     } else {
-      return  res.status(400).json({status: 400, message: 'Error creating product' });
+      return res.status(400).json({ status: 400, message: 'Error creating product' });
     }
 
-   
+
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
- 
+
 });
 
 const deleteProduct = catchAsync(async (req, res) => {
