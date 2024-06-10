@@ -183,9 +183,18 @@ if (product.brand_id.images && product.brand_id.images.length > 0) {
         acc[img.label] = `${MEDIA_URL}${img.value}`;
         return acc;
     }, {});
-
-   
 }
+
+const productVariants = product.product_variants && Array.isArray(product.product_variants) ? product.product_variants.map(variant => ({
+  variant_id: variant._id,
+  name: variant.name,
+  price: variant.price,
+  discounted_price: variant.discounted_price,
+  discount_percentage: variant.discounted_price ? Math.round(((variant.price - variant.discounted_price) / variant.price) * 100) : 0,
+  stock: variant.stock,
+  sku: variant.sku,
+  image: variant.image ? `${MEDIA_URL}${variant.image}` : "",  // Prepend MEDIA_URL if image exists
+})) : [];
 
 
     const data = {
@@ -211,10 +220,11 @@ if (product.brand_id.images && product.brand_id.images.length > 0) {
        sku: product.sku,
        description: product.description,
        stock: product.stock,
+       quantity_min: product.quantity_min,
        additional_descriptions: product.additional_descriptions,
        
        //options: options ,
-       //variants: transformedVariants,
+       variants: productVariants,
       
        similar_products_in_brand: similar_products_in_brand,
        similar_products_in_category: similar_products_in_category
