@@ -10,7 +10,7 @@ const productMediaRoute = require('./product_media.route');
 const customerRoute = require('./customer.route');
 const homeRoute = require('./home.route');
 const discount = require('./discount.route');
-
+const shippingrate = require('./shippingrate.route');
 
 const config = require('../../config/config');
 
@@ -60,6 +60,10 @@ const defaultRoutes = [
   {
     path: '/discount',
     route: discount
+  },
+  {
+    path: '/shippingrate',
+    route: shippingrate
   }
 ];
 
