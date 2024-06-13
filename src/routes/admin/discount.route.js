@@ -9,14 +9,14 @@ const router = express.Router();
 
 router
   .route('/')
-  .get(auth('getDiscount'),discountController.getAllDiscount)
-  .post(auth('getDiscount'),discountController.saveDiscount)
+  .get(auth('getDiscount'), discountController.getAllDiscount)
+  .post(auth('getDiscount'), discountController.saveDiscount)
 
-  router
+router
   .route('/:id')
- .get(auth('getDiscountById'),discountController.getDiscountById)
-.delete(auth('deleteDiscountById'),discountController.deleteDiscountById)
-.patch(auth('deleteDiscountById'),discountController.updateDiscountById)
+  .get(auth('getDiscount'), discountController.getDiscountById)
+  .delete(auth('deleteDiscount'), discountController.deleteDiscountById)
+  .patch(auth('editDiscount'), discountController.updateDiscountById)
 
 
 module.exports = router;
