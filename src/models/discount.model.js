@@ -33,7 +33,7 @@ startDate: {
   },
   endDate: {
     type: Date,
-  },
+  }, 
   startTime: {
     type: String, 
   },
@@ -43,12 +43,28 @@ startDate: {
   status: {
     type: String,
     enum: ['Active', 'Inactive', 'Expired'],
-    default: 'Active',
+    default: 'Inactive',
   },
   used: {
     type: Number,
     default: 0,
   },
+  usedBy: [{
+    customerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Customer',
+    },
+    name: String,
+    email: String,
+    usedDate: {
+      type: Date,
+      default: Date.now,
+    },
+    orderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Order',
+    },
+  }],
 });
 
 const Discount = mongoose.model('Discount', discountSchema);
