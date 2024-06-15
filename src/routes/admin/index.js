@@ -11,6 +11,7 @@ const customerRoute = require('./customer.route');
 const homeRoute = require('./home.route');
 const discount = require('./discount.route');
 const shippingrate = require('./shippingrate.route');
+const orderRoute = require('./order.route');
 
 const config = require('../../config/config');
 
@@ -64,6 +65,10 @@ const defaultRoutes = [
   {
     path: '/shippingrate',
     route: shippingrate
+  },
+  {
+    path: '/orders',
+    route: orderRoute
   }
 ];
 
