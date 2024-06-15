@@ -237,32 +237,24 @@ const login = catchAsync(async (req, res) => {
 
     if (await check_user_exists(email, mobile)) {
       if (!otp) {
-        result = await sendOTP(email, mobile);
+        const result = await sendOTP(email, mobile);
 
         if (result.status === 202) {
-          res.status(202).json({ status: result.status, message: result.message });
+          return res.status(202).json({ status: result.status, message: result.message });
         }
         if (result.status === 429) {
-          res.status(429).json({ status: result.status, message: result.message });
+          return res.status(429).json({ status: result.status, message: result.message });
         }
       } else {
-        // means we are on 2nd level of registration, with otp
-
+        // Second level of registration, with OTP
         if (await verifyOTP(otp, mobile, email)) {
-          // match otp with db
+          // Match OTP with DB
           const customer = await customerService.getUserByEmailOrPhone({ email, mobile });
 
-          //  console.log(customer)
-          // response = await OTP.delete({ otp }).exec();
           if (customer) {
             const tokens = await tokenService.generateAuthTokens(customer);
             await OTP.deleteOne({ otp }).exec();
-            res.cookie('refreshToken', tokens.refresh.token, {
-              httpOnly: true,
-              // secure: true,
-              // sameSite: 'None',
-              maxAge: 7 * 24 * 60 * 60 * 1000,
-            });
+
             return res.status(200).json({
               tokens,
               status: 200,
@@ -270,56 +262,54 @@ const login = catchAsync(async (req, res) => {
             });
           }
         } else {
-          res.status(400).json({ status: 400, message: 'Invalid OTP' });
+          return res.status(400).json({ status: 400, message: 'Invalid OTP' });
         }
       }
     } else {
-      res.status(404).json({ status: 404, message: 'User does not exist' });
-      // console.log('user exist');
+      return res.status(404).json({ status: 404, message: 'User does not exist' });
     }
-
-    // check pre check otp. if new then send otp. else check if less than 60 seconds
-
-    // match otp then add user, send token.
-  } catch (err) {
-    throw err;
-  }
-});
-
-
-
-const refreshToken = catchAsync(async (req, res) => {
-  try {
-    const { refreshToken } = req.body;
-
-    if (!refreshToken) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-
-    jwt.verify(refreshToken, config.jwt.secret, async (err, decoded) => {
-      if (err) {
-        return res.status(403).json({ message: 'Forbidden' });
-      }
-
-      const storedRefreshToken = await Token.findOne({ token: refreshToken });
-
-      if (!storedRefreshToken || storedRefreshToken.expires < new Date()) {
-        return res.status(401).json({ error: 'Invalid or expired refresh token' });
-      }
-
-      const customer = await Customer.findById(storedRefreshToken.user);
-      if (!customer) {
-        return res.status(401).json({ message: 'Unauthorized' });
-      }
-
-      const tokens = await tokenService.generateAuthTokens(customer);
-
-      return res.status(201).json({ tokens });
-    });
   } catch (err) {
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 });
+
+
+
+
+
+const refreshToken = catchAsync(async (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  jwt.verify(refreshToken, config.jwt.secret, async (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
+    const storedRefreshToken = await Token.findOne({ token: refreshToken });
+
+    if (!storedRefreshToken || storedRefreshToken.expires < new Date()) {
+      return res.status(401).json({ error: 'Invalid or expired refresh token' });
+    }
+
+    const customer = await Customer.findById(storedRefreshToken.user);
+    if (!customer) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const tokens = await tokenService.generateAuthTokens(customer);
+
+    return res.status(201).json({ tokens });
+  });
+});
+
+module.exports = {
+  refreshToken,
+};
+
 
 
 module.exports = {
