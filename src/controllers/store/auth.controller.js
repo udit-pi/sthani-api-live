@@ -286,44 +286,41 @@ const login = catchAsync(async (req, res) => {
   }
 });
 
+
+
 const refreshToken = catchAsync(async (req, res) => {
-
   try {
-    const cookies = req.cookies;
+    const { refreshToken } = req.body;
 
-    if (!cookies?.refreshToken) return res.status(401).json({ message: 'Unauthorized' });
-    const refreshToken = cookies.refreshToken;
-    jwt.verify(
-      refreshToken,
-      config.jwt.secret,
-      catchAsync(async (err, decoded) => {
-        if (err) return res.status(403).json({ message: 'Forbidden' });
-  
-        const storedRefreshToken = await Token.findOne({ token: refreshToken });
-  
-        if (!storedRefreshToken || storedRefreshToken.expires < new Date()) {
-          return res.status(401).json({ error: 'Invalid or expired refresh token' });
-        }
-        const customer = await Customer.findById(storedRefreshToken.user);
-        if (!customer) return res.status(401).json({ message: 'Unauthorized' });
-  
-        const tokens = await tokenService.generateAuthTokens(customer);
-  
-        res.cookie('refreshToken', tokens.refresh.token, {
-          httpOnly: true,
-          // secure: true,
-          // sameSite: 'None',
-          maxAge: 7 * 24 * 60 * 60 * 1000,
-        });
-        return res.status(201).json({ tokens });
-      })
-    );
+    if (!refreshToken) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
 
-  } catch(err) {
-    throw err
+    jwt.verify(refreshToken, config.jwt.secret, async (err, decoded) => {
+      if (err) {
+        return res.status(403).json({ message: 'Forbidden' });
+      }
+
+      const storedRefreshToken = await Token.findOne({ token: refreshToken });
+
+      if (!storedRefreshToken || storedRefreshToken.expires < new Date()) {
+        return res.status(401).json({ error: 'Invalid or expired refresh token' });
+      }
+
+      const customer = await Customer.findById(storedRefreshToken.user);
+      if (!customer) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+
+      const tokens = await tokenService.generateAuthTokens(customer);
+
+      return res.status(201).json({ tokens });
+    });
+  } catch (err) {
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
- 
 });
+
 
 module.exports = {
   sendOTP,
