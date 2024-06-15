@@ -285,7 +285,7 @@ const createProduct = async (productBody, req) => {
 const queryProducts = async (filter, options) => {
   // const brands = await Brand.paginate(filter, options);
   // const products = await Product.find({});
-  const products = await Product.find({}).sort({ createdAt: -1 });
+  const products = await Product.find({}).sort({ updatedAt: -1 });
 
   return products;
 };
@@ -426,6 +426,59 @@ const deleteProductById = async (productId) => {
     throw error;  // Rethrow to handle the error in the calling function or to respond to a client request
   }
 };
+
+
+// const syncProductsWithIQ = async () => {
+//   const unsyncedProducts = await Product.find({ published: true, isSyncedwithFullfillment: false });
+//   const syncedProducts = await Product.find({ published: true, isSyncedwithFullfillment: true });
+
+//   const createData = = unsyncedProducts.map(product => {
+//     // Construct the payload according to IQ's API requirements
+//     return {
+//       "SkuCode": product.sku,
+//       "Description": product.description,
+//       "IsActive": product.published ? true : false,
+//       "Name": product.name,
+//       "PackingQty": product.quantity_min || 1,
+//       "Price": product.price,
+//       "Weight": product.weight,
+//       "Length": product.length,
+//       "Width": product.width,
+//       "Height": product.height,
+//       "CostPrice": product.cost,
+//       // add other required fields based on IQ's documentation
+//     };
+//   });
+//   const updates = syncedProducts.map(product => {
+//     // Construct the payload according to IQ's API requirements
+//     return {
+//       "SkuCode": product.sku,
+//       "Description": product.description,
+//       "IsActive": product.published ? true : false,
+//       "Name": product.name,
+//       "PackingQty": product.quantity_min || 1,
+//       "Price": product.price,
+//       "Weight": product.weight,
+//       "Length": product.length,
+//       "Width": product.width,
+//       "Height": product.height,
+//       "CostPrice": product.cost,
+//       // add other required fields based on IQ's documentation
+//     };
+//   });
+
+//   // Assuming you have a function to send data to IQ
+//   const response = await sendToIQFulfillmentAPI(updates);
+
+//   // Update the isSyncedWithIQ flag after successful sync
+//   if (response.success) {
+//     await Product.updateMany({ _id: { $in: unsyncedProducts.map(p => p._id) } }, { isSyncedWithIQ: true });
+//   }
+
+//   return response;
+// };
+
+
 
 module.exports = {
   saveProduct,
