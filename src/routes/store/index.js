@@ -11,6 +11,7 @@ const SearchRoute=require('../store/searchRoute')
 const FilterRoute=require('../store/filter.Route')
 const shippingrateRoute=require('../store/shippingrateRoute')
 const discountRoute = require('../store/discountRoute')
+const orderRoute = require('../store/orderRoute');
 const router = express.Router();
 
 const defaultRoutes = [
@@ -56,6 +57,10 @@ const defaultRoutes = [
   {
     path: '/discount',
     route: discountRoute
+  },
+  {
+    path: '/order',
+    route: orderRoute
   }
 ];
 

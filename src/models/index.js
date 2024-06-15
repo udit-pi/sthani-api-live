@@ -10,3 +10,6 @@ module.exports.ProductMedia = require('./product_media.model');
 module.exports.OTP = require('./otp.model');
 module.exports.Customer = require('./customer.model');
 module.exports.Home = require('./home.model');
+module.exports.Order = require('./order.model');
+module.exports.Discount = require('./discount.model');
+module.exports.ShippingRate = require('./shippingrate.model');
