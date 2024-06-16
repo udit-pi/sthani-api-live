@@ -59,6 +59,16 @@ if (brand.images && brand.images.length > 0) {
 
             products: products.map(product => {
                 const productImages = product.media ? product.media.map(filename => MEDIA_URL + filename) : [];
+                const productVariants = product.product_variants && Array.isArray(product.product_variants) ? product.product_variants.map(variant => ({
+                    variant_id: variant._id,
+                    name: variant.name,
+                    price: variant.price,
+                    discounted_price: variant.discounted_price,
+                    discount_percentage: variant.discounted_price ? Math.round(((variant.price - variant.discounted_price) / variant.price) * 100) : 0,
+                    stock: variant.stock,
+                    sku: variant.sku,
+                    image: variant.image ? `${MEDIA_URL}${variant.image}` : "",  // Prepend MEDIA_URL if image exists
+                  })) : [];
 
                 return {
                 Product_id:product._id,
@@ -70,7 +80,8 @@ if (brand.images && brand.images.length > 0) {
                     amount: product.price,
                     original_amount: product.discounted_price,
                     discount_percentage: product.discounted_price ? Math.round(((product.price - product.discounted_price) / product.price) * 100) : 0 
-                }
+                },
+                variants: productVariants,
             };
               
             })
