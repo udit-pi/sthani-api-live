@@ -10,7 +10,7 @@ const router = express.Router();
 
 
 router.patch('/update-profile', authenticateToken, customerController.updateProfile); 
-
+router.patch('/upload-profile-pic', authenticateToken,  customerController.uploadProfilePic);
 router.get("/",authenticateToken, customerController.getDetails)
 
 router
@@ -26,6 +26,7 @@ router
 .route("/address/:address_Id")
 .delete(authenticateToken,customerController.deleteCustomerAddress)
 .patch( authenticateToken, customerController.updateCustomerAddress)
+
 
 router
 .route("/wishlist")
