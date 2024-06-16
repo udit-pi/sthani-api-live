@@ -13,6 +13,7 @@ exports.getAllProducts = async (req, res) => {
       name: product.name,
       sku: product.sku,
       stock: product.stock,
+      image: product.image,
       product_variants: product.product_variants.map(variant => ({
         _id: variant._id,
         name: variant.name,
