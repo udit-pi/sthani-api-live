@@ -40,7 +40,8 @@ const updateProfileValidation = async (userId) => {
       first_name: Joi.string().required(),
       last_name: Joi.string().required(),
       dob: Joi.string().required(),
-      gender: Joi.string().allow('')
+      gender: Joi.string().allow(''),
+      profilePicture: Joi.any().optional().allow(''),
     });
 
   
