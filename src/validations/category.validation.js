@@ -4,8 +4,7 @@ const { objectId } = require('./custom.validation');
 const createCategory = {
   body: Joi.object().keys({
     name: Joi.string().required(),
-    // slug: Joi.string().required(),
-    // code: Joi.string().required(),
+    is_featured: Joi.string().optional(),
     banner: Joi.string().optional(),
     icon: Joi.string().optional(),
     parent_category: Joi.string().optional(),

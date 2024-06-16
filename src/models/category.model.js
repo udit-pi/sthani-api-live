@@ -30,6 +30,12 @@ const categorySchema = mongoose.Schema(
       // trim: true,
 
     },
+    is_featured: {
+      type: Boolean,
+      required: false,
+      default: false,
+
+    },
     description: {
       type: String,
       required: false,
