@@ -12,6 +12,46 @@ const {
 } = require("../../services/fileUpload.service");
 
 
+const uploadProfilePic = catchAsync(async (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ error: 'Token not provided' });
+  }
+  const payload = jwt.verify(token, config.jwt.secret);
+
+  const customer = await Customer.findById(payload.sub);
+
+  if (!customer) {
+    return res.status(404).json({ error: 'Customer not found' });
+  }
+
+  try {
+    // Handle profile picture update
+    if (req.files && req.files.profilePicture) {
+      const profilePicture = await uploadSingleFile(req.files.profilePicture);
+      customer.profilePicture = profilePicture;
+      await customer.save();
+
+      const profilePictureUrl = `${MEDIA_URL}${customer.profilePicture}`;
+
+
+      res.status(200).json({
+        status: 200,
+        message: "Profile picture updated successfully",
+        data: {
+          ...customer.toJSON(),
+          profilePicture: profilePictureUrl,
+        },
+      });
+    } else {
+      res.status(400).json({ message: "File not provided" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "An error occurred while updating the profile picture" });
+  }
+});
+
 const updateProfile = catchAsync(async (req, res) => {
 
   const authHeader = req.headers['authorization'];
@@ -749,6 +789,6 @@ const deleteFavBrands = catchAsync(async (req, res) => {
 })
 
 module.exports = {
-  updateProfile, getDetails, addAddress
+  updateProfile, uploadProfilePic, getDetails, addAddress
   , getAllAddress, deleteCustomerAddress, updateCustomerAddress, addProductToWishlist, getWishlist, removeProductFromWishlist, addFavBrand, getFavBrand, deleteFavBrands
 }
