@@ -11,7 +11,7 @@ const MEDIA_URL = process.env.MEDIA_URL;
 
 const getFiltercategory = catchAsync(async (req, res) => {
 
-    
+
     console.log("Params: ", req.params);
     const { categoryId } = req.params;
     console.log("Category: ", categoryId);
@@ -27,9 +27,9 @@ const getFiltercategory = catchAsync(async (req, res) => {
         select: '_id name icon'
     });
 
-    
+
     console.log("Category data: ", category);
-    
+
 
     if (!category) throw new ApiError(httpStatus.NOT_FOUND, 'Category not found');
 
@@ -42,8 +42,8 @@ const getFiltercategory = catchAsync(async (req, res) => {
 
     const filterData = req.body.filters
     const query = pick(req.query, ['sort', 'page']);
-    const { sort } = query;    
-    
+    const { sort } = query;
+
     let FilterProducts = filters(productsQuery, query, filterData)
     const products = FilterProducts.sortedProducts
     const pageNumber = FilterProducts.page
@@ -53,7 +53,7 @@ const getFiltercategory = catchAsync(async (req, res) => {
     // if (product && Array.isArray(product[0].media)) {
     //     // Map over the array of filenames and concatenate MEDIA_URL with each filename
     //     var productImage = product[0].media.map(filename => MEDIA_URL + filename);
-        
+
     // } else {
     //     console.log("Product media is not defined or not an array");
     // }
@@ -86,7 +86,7 @@ const getFiltercategory = catchAsync(async (req, res) => {
                     stock: variant.stock,
                     sku: variant.sku,
                     image: variant.image ? `${MEDIA_URL}${variant.image}` : "",  // Prepend MEDIA_URL if image exists
-                  })) : [];
+                })) : [];
 
                 return {
                     Product_id: product._id,
@@ -99,7 +99,7 @@ const getFiltercategory = catchAsync(async (req, res) => {
                         name: product.brand_id.name,
                         logo: `${MEDIA_URL}${product.brand_id.logo}`
 
-                    }, 
+                    },
                     price: {
                         currency: "AED",
                         amount: product.price,
@@ -124,6 +124,41 @@ const getFiltercategory = catchAsync(async (req, res) => {
     res.status(200).json(response)
 
 })
+
+const getCategoryList = catchAsync(async (req, res) => {
+    // Ensure MEDIA_URL is defined somewhere in your environment or config
+    
+
+    try {
+        const categories = await Category.find({ is_featured: true }).select('_id name icon banner');
+
+        if (categories.length > 0) {
+            const response = {
+                status: 200,
+                message: 'Success',
+                categories: categories.map(category => ({
+                    Category_Id: category._id,
+                    name: category.name,
+                    banner: category.banner && `${MEDIA_URL}${category.banner}`,
+                }))
+            };
+            res.status(200).json(response);
+        } else {
+            // Handle case when no categories are found
+            res.status(404).json({
+                status: 404,
+                message: 'No featured categories found'
+            });
+        }
+    } catch (error) {
+        // Handle potential errors during database operations
+        res.status(500).json({
+            status: 500,
+            message: 'Server error',
+            error: error.message
+        });
+    }
+});
 
 
 
@@ -185,4 +220,4 @@ const getFiltercategory = catchAsync(async (req, res) => {
 
 
 
-module.exports = { getFiltercategory }
+module.exports = { getFiltercategory, getCategoryList }
