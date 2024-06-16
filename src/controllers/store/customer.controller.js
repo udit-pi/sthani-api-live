@@ -7,6 +7,9 @@ const { updateProfileValidation } = require('../../validations/store/profile.val
 const customerModel = require('../../models/customer.model');
 const Product = require('../../models/product.model');
 const MEDIA_URL = process.env.MEDIA_URL;
+const {
+  uploadSingleFile
+} = require("../../services/fileUpload.service");
 
 
 const updateProfile = catchAsync(async (req, res) => {
@@ -54,6 +57,13 @@ const updateProfile = catchAsync(async (req, res) => {
     customer.mobile = req.body.mobile
 
     customer.email = req.body.email
+    
+   // Handle profile picture update
+   if (req.files && req.files.profilePicture) {
+    const profilePicture = await uploadSingleFile(req.files.profilePicture);
+    
+    customer.profilePicture = profilePicture;
+  }
 
     const updatedCustomer = await customer.save();
     res.status(200).json({
@@ -124,6 +134,7 @@ const getDetails = catchAsync(async (req, res) => {
       email: customer.email,
       dob: customer.dob,
       gender: customer.gender,
+      profilePicture: customer.profilePicture && `${MEDIA_URL}${customer.profilePicture}`
       //default_address: default_Address
     };
 
