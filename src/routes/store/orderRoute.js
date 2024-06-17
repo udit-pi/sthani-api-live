@@ -14,4 +14,8 @@ router
   .route('/')
   .post(authenticateToken, validate(orderValidation.createOrder), orderController.createOrder);
 
+router
+  .route('/update-payment-status')
+  .post(authenticateToken, validate(orderValidation.updatePaymentStatus), orderController.updatePaymentStatus);
+  
 module.exports = router;
