@@ -36,11 +36,18 @@ const createOrder = catchAsync(async (req, res) => {
   res.status(httpStatus.CREATED).send(order);
 });
 
+const updatePaymentStatus = catchAsync(async (req, res) => {
+  const { orderId, status, transactionId, errorMessage } = req.body;
+  const order = await orderService.updatePaymentStatus(orderId, status, transactionId, errorMessage);
+  res.status(httpStatus.OK).json(order);
+});
+
 module.exports = {
   verifyOrder,
   createOrder,
   getOrders,
   getOrderById,
   updateOrderStatus,
+  updatePaymentStatus,
   addShipmentDetails,
 };

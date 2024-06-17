@@ -64,7 +64,7 @@ const verifyOrder = async (items, subtotal, discountCode) => {
 
 
 const createOrder = async (customer, orderData) => {
-  const { items, discountCode, address } = orderData;
+  const { items, discountCode, address, currency = 'AED' } = orderData;
   let total = 0;
 
   // Fetch customer details
@@ -119,6 +119,7 @@ const createOrder = async (customer, orderData) => {
     },
     address,
     items: orderItems,
+    currency,
     subtotal,
     discount: {
       code: discountCode,
@@ -129,6 +130,21 @@ const createOrder = async (customer, orderData) => {
   });
 
   await order.save();
+  return order;
+};
+
+const updatePaymentStatus = async (orderId, status, transactionId, errorMessage) => {
+  const order = await Order.findById(orderId);
+  if (!order) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
+  }
+
+  order.paymentStatus = status;
+  order.transactionId = transactionId; // Assuming you want to store this.
+  order.paymentErrorMessage = errorMessage; // Optional: Store any error message.
+
+  await order.save();
+
   return order;
 };
 
@@ -160,4 +176,5 @@ module.exports = {
   getOrderById,
   updateOrderStatus,
   addShipmentDetails,
+  updatePaymentStatus
 };

@@ -97,6 +97,11 @@ const orderSchema = mongoose.Schema(
       address_type: { type: String, enum: ['Home', 'Office'] },
     },
     items: [orderItemSchema],
+    currency: {
+      type: String,
+      required: true,
+      default: "AED"
+    },
     subtotal: {
       type: Number,
       required: true,
@@ -124,12 +129,34 @@ const orderSchema = mongoose.Schema(
     },
     orderStatus: {
       type: String,
-      enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
-      default: 'Pending',
+      enum: ['Unfulfilled', 'Fulfilled', 'Shipped', 'Delivered', 'Cancelled'],
+      default: 'Unfulfilled',
+    },
+    transactionId: { 
+      type: String, 
+      required: false 
+    },
+    paymentErrorMessage: { 
+      type: String, 
+      required: false 
+    },
+    paymentMethod: {
+      type: String,
+      required: false,
+    },
+    paymentDetails: {
+      cardType: { type: String, required: false },
+      cardLastFour: { type: String, required: false },
+      expirationDate: { type: String, required: false },
+    },
+    transactionStatus: { type: String, required: false },
+    paymentErrors: {
+      code: { type: String, required: false },
+      message: { type: String, required: false },
     },
     shipmentDetails: {
       trackingNumber: {
-        type: String,
+        type: String, 
         required: false,
       },
       shippingCompany: {
@@ -142,6 +169,13 @@ const orderSchema = mongoose.Schema(
     timestamps: true,
   }
 );
+
+orderSchema.pre('find', function() {
+  // Apply default sorting by createdAt in descending order
+  this.sort({ createdAt: -1 });
+});
+
+orderSchema.index({ customerId: 1, paymentStatus: 1, orderStatus: 1 });
 
 // Custom validation to ensure either email or mobile is present
 orderSchema.pre('validate', function (next) {
