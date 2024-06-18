@@ -39,7 +39,6 @@ const createOrder = catchAsync(async (req, res) => {
     return res.status(400).json({ status: 400, message: 'Error creating order' });
   }
 
-  //res.status(httpStatus.CREATED).send(order);
 });
 
 const updatePaymentStatus = catchAsync(async (req, res) => {
