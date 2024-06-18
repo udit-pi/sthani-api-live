@@ -33,12 +33,24 @@ const createOrder = catchAsync(async (req, res) => {
   const { customer } = req;
   const orderData = req.body;
   const order = await orderService.createOrder(customer, orderData);
-  res.status(httpStatus.CREATED).send(order);
+  if (order) {
+    return res.status(201).json({ status: 201, message: 'Order created successfully!', order: order });
+  } else {
+    return res.status(400).json({ status: 400, message: 'Error creating order' });
+  }
+
+  //res.status(httpStatus.CREATED).send(order);
 });
 
 const updatePaymentStatus = catchAsync(async (req, res) => {
   const { orderId, status, transactionId, errorMessage } = req.body;
   const order = await orderService.updatePaymentStatus(orderId, status, transactionId, errorMessage);
+  if (order) {
+    return res.status(201).json({ status: 201, message: 'Payment updated successfully!', order: order });
+  } else {
+    return res.status(400).json({ status: 400, message: 'Error updating payment' });
+  }
+
   res.status(httpStatus.OK).json(order);
 });
 

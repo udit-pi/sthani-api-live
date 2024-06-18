@@ -1,71 +1,53 @@
 const { Order, Product, Discount, Customer, ShippingRate } = require('../models');
 const ApiError = require('../utils/ApiError');
 const httpStatus = require('http-status');
+const MEDIA_URL = process.env.MEDIA_URL;
+
+// const verifyOrder = async (items, discountAmount, shipping) => {
+
+//   const productUpdates = [];
 
 
-const getShippingRate = async (subtotal) => {
-  // Replace this with your actual logic to fetch the shipping rate based on subtotal
-  const shippingRate = await ShippingRate.findOne({ minValue: { $lte: subtotal }, maxValue: { $gte: subtotal } });
-  return shippingRate ? shippingRate.rate : 0;
-};
+//   for (const item of items) {
+//     const product = await Product.findById(item.product);
+//     if (!product) {
+//       throw new ApiError(httpStatus.NOT_FOUND, `Product not found: ${item.product}`);
+//     }
 
+//     // Check stock for the variant if provided
+//     if (item.variant && item.variant._id) {
+//       const variant = product.product_variants.id(item.variant._id);
+//       if (!variant) {
+//         throw new ApiError(httpStatus.NOT_FOUND, `Variant not found: ${item.variant._id}`);
+//       }
+//       if (variant.stock < item.quantity) {
+//         throw new ApiError(httpStatus.BAD_REQUEST, `Insufficient stock for variant: ${variant.name}`);
+//       }
+//       productUpdates.push({ product, variant, quantity: item.quantity });
+//     } else {
+//       if (product.stock < item.quantity) {
+//         throw new ApiError(httpStatus.BAD_REQUEST, `Insufficient stock for product: ${product.name}`);
+//       }
+//       productUpdates.push({ product, quantity: item.quantity });
+//     }
 
-const verifyOrder = async (items, subtotal, discountCode) => {
-  let total = 0;
-  const productUpdates = [];
-  let discount = 0;
+//     const itemPrice = item.discounted_price || item.price;
+//     total += item.quantity * itemPrice;
+//   }
 
-  for (const item of items) {
-    const product = await Product.findById(item.product);
-    if (!product) {
-      throw new ApiError(httpStatus.NOT_FOUND, `Product not found: ${item.product}`);
-    }
+//   // Calculate subtotal and total amount
+//   subtotal = total;
+//   total = subtotal - discount;
 
-    // Check stock for the variant if provided
-    if (item.variant && item.variant._id) {
-      const variant = product.product_variants.id(item.variant._id);
-      if (!variant) {
-        throw new ApiError(httpStatus.NOT_FOUND, `Variant not found: ${item.variant._id}`);
-      }
-      if (variant.stock < item.quantity) {
-        throw new ApiError(httpStatus.BAD_REQUEST, `Insufficient stock for variant: ${variant.name}`);
-      }
-      productUpdates.push({ product, variant, quantity: item.quantity });
-    } else {
-      if (product.stock < item.quantity) {
-        throw new ApiError(httpStatus.BAD_REQUEST, `Insufficient stock for product: ${product.name}`);
-      }
-      productUpdates.push({ product, quantity: item.quantity });
-    }
-
-    const itemPrice = item.discounted_price || item.price;
-    total += item.quantity * itemPrice;
-  }
-
-  // Validate discount code
-  if (discountCode) {
-    const discountData = await Discount.findOne({ code: discountCode });
-    if (!discountData) {
-      throw new ApiError(httpStatus.NOT_FOUND, 'Discount code not found');
-    }
-    if (discountData.discountValueType === 'PERCENTAGE') {
-      discount = (discountData.discountValue / 100) * total;
-    } else {
-      discount = discountData.discountValue;
-    }
-  }
-
-  // Calculate subtotal and total amount
-  subtotal = total;
-  total = subtotal - discount;
-
-  return { subtotal, discount, productUpdates };
-};
-
+//   return { subtotal, discount, productUpdates };
+// };
 
 const createOrder = async (customer, orderData) => {
-  const { items, discountCode, address, currency = 'AED' } = orderData;
-  let total = 0;
+  const { items, discountAmount, discountCode, shippingAmount, address } = orderData;
+  let subtotal = 0;
+  let currency = "AED";  // Assuming currency is fixed for all orders; if not, this might need to be dynamic
+  const productUpdates = [];
+  const orderItems = [];
 
   // Fetch customer details
   const customerDetails = await Customer.findById(customer._id);
@@ -73,43 +55,73 @@ const createOrder = async (customer, orderData) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Customer not found');
   }
 
-  // Validate the order first
-  const { subtotal, discount, productUpdates } = await verifyOrder(items, orderData.subtotal, discountCode);
-
-  // Calculate shipping
-  const shipping = await getShippingRate(subtotal);
-
-  // Calculate total amount
-  total = subtotal - discount + shipping;
-
-  // Update stock only after validation
-  for (const update of productUpdates) {
-    if (update.variant) {
-      update.variant.stock -= update.quantity;
-    } else {
-      update.product.stock -= update.quantity;
+  for (const item of items) {
+    const product = await Product.findById(item.Product_id);
+    if (!product) {
+      throw new ApiError(httpStatus.NOT_FOUND, `Product not found: ${item.Product_id}`);
     }
-    await update.product.save();
+
+    let priceToUse;
+    let variantDetails = {};
+
+    if (item.variant && item.variant.variant_id) {
+      const variant = product.product_variants.find(v => v._id.toString() === item.variant.variant_id);
+      if (!variant) {
+        throw new ApiError(httpStatus.NOT_FOUND, `Variant not found: ${item.variant.variant_id}`);
+      }
+
+      priceToUse = item.variant.discounted_price || variant.price;
+      variantDetails = {  // Collect variant details for the order item
+        variant_id: variant._id,
+        name: variant.name,
+        price: variant.price,
+        discounted_price: variant.discounted_price,
+        sku: variant.sku,
+        image: variant.image && `${MEDIA_URL}${variant.image}`
+      };
+
+      if (variant.stock < item.quantity) {
+        throw new ApiError(httpStatus.BAD_REQUEST, `Insufficient stock for variant: ${variant.name}`);
+      }
+      productUpdates.push({ product: product._id, variant: variant._id, quantity: item.quantity });
+    } else {
+      priceToUse = item.discounted_price || product.price;
+
+      if (product.stock < item.quantity) {
+        throw new ApiError(httpStatus.BAD_REQUEST, `Insufficient stock for product: ${product.name}`);
+      }
+      productUpdates.push({ product: product._id, quantity: item.quantity });
+    }
+
+    subtotal += priceToUse * item.quantity;
+
+
+    // Construct the order item object, conditionally including the variant
+    let orderItem = {
+      productId: product._id,
+      name: product.name,
+      sku: product.sku,
+      image: product.media && product.media[0] ? `${MEDIA_URL}${product.media[0]}` : "",
+      quantity: item.quantity,
+      price: priceToUse,
+      discounted_price: item.discounted_price || priceToUse,
+      total: item.quantity * priceToUse
+    };
+
+    // Add variant only if it has meaningful data
+    if (item.variant && item.variant.variant_id && item.variant.sku !="") {
+      orderItem.variant = variantDetails;
+    }
+
+    orderItems.push(orderItem);
+
+    delete variantDetails;
+
   }
 
-  // Create order items
-  const orderItems = items.map((item) => {
-    const product = productUpdates.find((p) => p.product._id.toString() === item.product);
-    const itemPrice = item.discounted_price || item.price;
-    return {
-      productId: product.product._id,
-      name: product.product.name,
-      sku: product.product.sku,
-      image: product.product.media && product.product.media[0] ? product.product.media[0] : "",
-      quantity: item.quantity,
-      price: item.price,
-      discounted_price: item.discounted_price || item.price,
-      total: item.quantity * itemPrice,
-      variant: item.variant || {},
-    };
-  });
+  const total = subtotal - discountAmount + shippingAmount;
 
-  // Create order
+  // Create the order object
   const order = new Order({
     customer: {
       customerId: customerDetails._id,
@@ -123,15 +135,43 @@ const createOrder = async (customer, orderData) => {
     subtotal,
     discount: {
       code: discountCode,
-      amount: discount,
+      amount: discountAmount,
     },
-    shipping,
+    shipping: shippingAmount,
     total,
   });
 
-  await order.save();
-  return order;
+  try {
+    await order.save();
+
+    // Decrement stock after order is successfully saved
+    for (const update of productUpdates) {
+      if (update.variant) {
+        await Product.updateOne(
+          { _id: update.product, 'product_variants._id': update.variant },
+          { $inc: { 'product_variants.$.stock': -update.quantity } }
+        );
+      } else {
+        await Product.updateOne(
+          { _id: update.product },
+          { $inc: { stock: -update.quantity } }
+        );
+      }
+    }
+
+    
+    return order;
+
+  } catch (error) {
+    console.error('Failed to save the order:', error);
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to save the order');
+  }
 };
+
+
+
+
+
 
 const updatePaymentStatus = async (orderId, status, transactionId, errorMessage) => {
   const order = await Order.findById(orderId);
@@ -170,7 +210,7 @@ const addShipmentDetails = async (id, shipmentDetails) => {
 };
 
 module.exports = {
-  verifyOrder,
+
   createOrder,
   queryOrders,
   getOrderById,
