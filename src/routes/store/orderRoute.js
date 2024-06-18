@@ -16,6 +16,6 @@ router
 
 router
   .route('/update-payment-status')
-  .post(authenticateToken, validate(orderValidation.updatePaymentStatus), orderController.updatePaymentStatus);
-  
+  .patch(authenticateToken, validate(orderValidation.updatePaymentStatus), orderController.updatePaymentStatus);
+
 module.exports = router;

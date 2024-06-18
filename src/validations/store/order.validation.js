@@ -5,7 +5,7 @@ const createOrder = {
     items: Joi.array()
       .items(
         Joi.object({
-          product: Joi.string().required(),
+          Product_id: Joi.string().required(),
           quantity: Joi.number().integer().min(1).required(),
           price: Joi.number().required(),
           discounted_price: Joi.number().optional(),
@@ -13,11 +13,9 @@ const createOrder = {
         })
       )
       .required(),
-    discount: Joi.object({
-      code: Joi.string().optional(),
-      amount: Joi.number().optional(),
-    }),
-    shipping: Joi.number().required(),
+    discountCode: Joi.string().optional(),
+    discountAmount: Joi.number().optional(),
+    shippingAmount: Joi.number().required(),
     address: Joi.object({
       name: Joi.string().required(),
       mobile: Joi.string().required(),
