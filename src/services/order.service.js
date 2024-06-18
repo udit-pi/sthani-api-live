@@ -77,7 +77,7 @@ const createOrder = async (customer, orderData) => {
         price: variant.price,
         discounted_price: variant.discounted_price,
         sku: variant.sku,
-        image: variant.image && `${MEDIA_URL}${variant.image}`
+        image: variant.image && `${variant.image}`
       };
 
       if (variant.stock < item.quantity) {
@@ -101,7 +101,7 @@ const createOrder = async (customer, orderData) => {
       productId: product._id,
       name: product.name,
       sku: product.sku,
-      image: product.media && product.media[0] ? `${MEDIA_URL}${product.media[0]}` : "",
+      image: product.media && product.media[0] ? `${product.media[0]}` : "",
       quantity: item.quantity,
       price: priceToUse,
       discounted_price: item.discounted_price || priceToUse,
