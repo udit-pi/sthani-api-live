@@ -145,9 +145,8 @@ const orderSchema = mongoose.Schema(
       required: false,
     },
     paymentDetails: {
-      cardType: { type: String, required: false },
-      cardLastFour: { type: String, required: false },
-      expirationDate: { type: String, required: false },
+      type: Schema.Types.Mixed, // Allows any data type
+      required: false
     },
     transactionStatus: { type: String, required: false },
     paymentErrors: {

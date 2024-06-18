@@ -53,11 +53,14 @@ const updatePaymentStatus = {
     transactionId: Joi.string().allow('', null),  // Transaction ID can be optional
     errorMessage: Joi.string().allow('', null),  // Error message can be optional
     paymentMethod: Joi.string().allow('', null),  // Payment method can be optional
-    paymentDetails: Joi.object({
-      cardType: Joi.string().allow('', null),  // Type of card used, optional
-      cardLastFour: Joi.string().length(4).allow('', null),  // Last four digits of the card, length must be exactly 4
-      expirationDate: Joi.string().allow('', null)  // Expiration date, no format enforced
-    }).allow(null),
+    paymentDetails: Joi.alternatives().try(  // Allow different structures based on payment method
+      Joi.object({
+        cardType: Joi.string().allow('', null).optional(),
+        cardLastFour: Joi.string().regex(/^\d{4}$/).allow('', null).optional(),
+        expirationDate: Joi.string().allow('', null).optional(),
+      }),
+      Joi.object().unknown(true)  // Allow any other object structure
+    ).allow(null),
     transactionStatus: Joi.string().allow('', null),  // Transaction status, optional
     paymentErrors: Joi.object({
       code: Joi.string().allow('', null),  // Error code, optional
