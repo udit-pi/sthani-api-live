@@ -715,7 +715,7 @@ const getFavBrand = catchAsync(async (req, res) => {
     // Fetch the customer
     const customer = await Customer.findById(customerId).populate({
       path: 'favoriteBrands',
-      select: 'name logo'
+      select: 'name logo images color'
     });
 
     if (!customer) {
