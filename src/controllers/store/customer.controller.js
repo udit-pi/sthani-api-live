@@ -722,15 +722,16 @@ const getFavBrand = catchAsync(async (req, res) => {
       return res.status(404).json({ status: 404, message: 'Customer not found' });
     }
 
-    const coverImage = brand.images.find(img => img.label === 'cover');
-    // Format the response
-    const favoriteBrands = customer.favoriteBrands.map(brand => ({
-      id: brand._id,
-      name: brand.name,
-      logo: brand.logo,
-      color: brand.color,
-      cover: coverImage ? `${MEDIA_URL}${coverImage.value}` : ""
-    }));
+    const favoriteBrands = customer.favoriteBrands.map(brand => {
+      const coverImage = brand.images.find(img => img.label === 'cover');
+      return {
+        id: brand._id,
+        name: brand.name,
+        logo: brand.logo,
+        color: brand.color,
+        cover: coverImage ? `${MEDIA_URL}${coverImage.value}` : ""
+      };
+    });
 
     res.status(200).json({
       status: 200,
