@@ -727,7 +727,7 @@ const getFavBrand = catchAsync(async (req, res) => {
       return {
         id: brand._id,
         name: brand.name,
-        logo: brand.logo,
+        logo: brand.logo ? `${MEDIA_URL}${brand.logo}` : "",
         color: brand.color,
         cover: coverImage ? `${MEDIA_URL}${coverImage.value}` : ""
       };
