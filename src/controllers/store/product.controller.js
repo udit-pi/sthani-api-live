@@ -76,9 +76,19 @@ const getUpsellingProducts = catchAsync(async (req, res) => {
   try {
     
     
-    const result = await Product.find({upsell:true}).sort({ createdAt: -1 }).limit(10);
-    // console.log(result)
-    res.send(result);
+    const result = await Product.find({is_upsell:true}).sort({ createdAt: -1 }).limit(10).populate({
+      path: 'brand_id',
+  });;
+    if(result && result.length >0) {
+    const upselling_products = await Promise.all (result.map(async(product) => {
+      return getProductBasic(product);
+    }))
+     return res.send(upselling_products);
+    } else {
+      return res.status(404).json({ status: 404, message: 'No upselling products found' });
+    }
+
+    
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -273,6 +283,17 @@ const productVariants = product.product_variants && Array.isArray(product.produc
 function getProductBasic(product){
   const productImages = product.media ? product.media.map(filename => MEDIA_URL + filename) : [];
 
+  const productVariants = product.product_variants && Array.isArray(product.product_variants) ? product.product_variants.map(variant => ({
+    variant_id: variant._id,
+    name: variant.name,
+    price: variant.price,
+    discounted_price: variant.discounted_price,
+    discount_percentage: variant.discounted_price ? Math.round(((variant.price - variant.discounted_price) / variant.price) * 100) : 0,
+    stock: variant.stock,
+    sku: variant.sku,
+    image: variant.image ? `${MEDIA_URL}${variant.image}` : "",  // Prepend MEDIA_URL if image exists
+  })) : [];
+
                 return {
                     Product_id: product._id,
                     name: product.name,
@@ -291,7 +312,10 @@ function getProductBasic(product){
                         amount: product.price,
                         original_amount: product.discounted_price,
                         discount_percentage: product.discounted_price ? Math.round(((product.price - product.discounted_price) / product.price) * 100) : 0
-                    }
+                    },
+                    variants: productVariants,
+      
+
                 };
 }
 
