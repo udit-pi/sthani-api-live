@@ -43,7 +43,7 @@ const MEDIA_URL = process.env.MEDIA_URL;
 // };
 
 const createOrder = async (customer, orderData) => {
-  const { items, discountAmount, discountCode, shippingAmount, address } = orderData;
+  const { items, discountAmount=0, discountCode="", shippingAmount=0, address } = orderData;
   let subtotal = 0;
   let currency = "AED";  // Assuming currency is fixed for all orders; if not, this might need to be dynamic
   const productUpdates = [];

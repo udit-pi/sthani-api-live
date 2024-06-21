@@ -84,10 +84,14 @@ const productSchema = mongoose.Schema(
       type: [String], 
       required: true
     },
-    published: {
+    is_upsell: {
       type: Boolean,
       default: 0
   },
+  published: {
+    type: Boolean,
+    default: 0
+},
  
     deleted_at: {
       type: Date,
