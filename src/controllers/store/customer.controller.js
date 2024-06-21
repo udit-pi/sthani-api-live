@@ -8,6 +8,7 @@ const customerModel = require('../../models/customer.model');
 const Product = require('../../models/product.model');
 const MEDIA_URL = process.env.MEDIA_URL;
 const { formatDateUAE } = require('../../utils/dateUtils')
+const mapOrderStatus = require('../../utils/mapOrderStatus');
 const {
   uploadSingleFile
 } = require("../../services/fileUpload.service");
@@ -827,6 +828,7 @@ const getOrders = catchAsync(async (req, res) => {
         items: order.items,
         subtotal: order.subtotal,
         shippingAmount: order.shipping, 
+        total: order.total,
         created_at: formatDateUAE(order.createdAt),
         
       };
@@ -847,22 +849,7 @@ const getOrders = catchAsync(async (req, res) => {
 
 })
 
-const mapOrderStatus = (status) => {
-  switch (status) {
-    case 'Unfulfilled':
-      return 'Order Placed';
-    case 'Fulfilled':
-      return 'Packed';
-    case 'Shipped':
-      return 'Shipped';
-    case 'Delivered':
-      return 'Delivered';
-    case 'Cancelled':
-      return 'Cancelled';
-    default:
-      return status;
-  }
-};
+
 
 
 module.exports = {
