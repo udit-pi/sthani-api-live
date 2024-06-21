@@ -15,7 +15,6 @@ router.get("/",authenticateToken, customerController.getDetails)
 
 router
 .route("/addresses")
-
 .get(authenticateToken,customerController.getAllAddress)
 
 router
@@ -49,6 +48,9 @@ router
 .post(authenticateToken,customerController.addFavBrand)
 .delete(authenticateToken,customerController.deleteFavBrands)
 
+router
+.route("/orders")
+.get(authenticateToken,customerController.getOrders)
 
 
 module.exports = router;
