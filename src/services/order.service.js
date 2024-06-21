@@ -2,6 +2,8 @@ const { Order, Product, Discount, Customer, ShippingRate } = require('../models'
 const ApiError = require('../utils/ApiError');
 const httpStatus = require('http-status');
 const MEDIA_URL = process.env.MEDIA_URL;
+const mapOrderStatus = require('../utils/mapOrderStatus');
+const { formatDateUAE } = require('../utils/dateUtils')
 
 // const verifyOrder = async (items, discountAmount, shipping) => {
 
@@ -205,8 +207,31 @@ const queryOrders = async (filter, options) => {
 };
 
 const getOrderById = async (id) => {
+  // Fetch the order by its ID
   const order = await Order.findById(id);
-  return order;
+
+  // Throw an error if the order is not found
+  if (!order) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
+  }
+
+  // Construct a data object with the order details
+  const orderDetails = {
+    Order_id: order._id,
+    orderStatus: mapOrderStatus(order.orderStatus),  // Assumes mapOrderStatus is a function you've defined
+    address: order.address,
+    discount: order.discount,
+    currency: order.currency,
+    paymentStatus: order.paymentStatus,
+    items: order.items,
+    subtotal: order.subtotal,
+    shippingAmount: order.shipping,
+    total: order.total,
+    created_at: formatDateUAE(order.createdAt)  // Assumes formatDateUAE is correctly implemented
+  };
+
+  // Return the constructed data object
+  return orderDetails;
 };
 
 const updateOrderStatus = async (id, status) => {

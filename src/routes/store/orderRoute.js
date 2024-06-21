@@ -15,6 +15,10 @@ router
   .post(authenticateToken, validate(orderValidation.createOrder), orderController.createOrder);
 
 router
+  .route('/:orderId')
+  .get(authenticateToken,  orderController.getOrderById);
+
+router
   .route('/update-payment-status')
   .patch(authenticateToken, validate(orderValidation.updatePaymentStatus), orderController.updatePaymentStatus);
 
