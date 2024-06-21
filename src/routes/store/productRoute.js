@@ -8,7 +8,7 @@ const authenticateToken = require('../../middlewares/customerAuth');
 const router = express.Router();
 
 router.get('/getProducts', productController.getProducts);
-
+router.get('/upselling', productController.getUpsellingProducts);
 
 router.get('/:productId', productController.getProduct)
   
