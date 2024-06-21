@@ -17,6 +17,8 @@ const { createProductMedia } = require("./product_media.service");
 const uploadFolder = process.env.UPLOAD_FOLDER || "/var/www/html/media";
 
 const imageExtensions = ["jpg", "jpeg", "png", "gif", "bmp", "webp"];
+
+
 async function handleProductVariants(product_variants, req_files) {
   const variant_images = [];
   if (req_files) {
@@ -174,6 +176,7 @@ const saveProduct = async (productBody, req, productId = null) => {
       'discounted_price',
       'cost',
       'published',
+      'is_upsell',
       'categories',
       'options'
     ];
@@ -259,6 +262,7 @@ const createProduct = async (productBody, req) => {
       media: newMedia,
       price: productBody.price,
       discounted_price: productBody.discounted_price,
+      is_upsell : productBody.is_upsell,
 
       cost: productBody.cost,
       published: productBody.published,
@@ -289,6 +293,9 @@ const queryProducts = async (filter, options) => {
 
   return products;
 };
+
+
+
 
 const getProductById = async (id) => {
   const product = await Product.findById(id)
@@ -365,6 +372,7 @@ const updateProductById = async (productId, productBody, req) => {
     product.cost = productBody.cost;
     product.published = productBody.published;
     product.categories = productBody.categories;
+    product.is_upsell = productBody.is_upsell;
 
     product.options = productBody.options;
     //product.product_variants = productBody.productVariants;

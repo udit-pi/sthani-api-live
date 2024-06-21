@@ -8,7 +8,10 @@ const createOrder = {
           Product_id: Joi.string().required(),
           quantity: Joi.number().integer().min(1).required(),
           price: Joi.number().required(),
-          discounted_price: Joi.number().optional(),
+          discounted_price: Joi.number().optional().when('price', {
+            is: Joi.exist(),
+            then: Joi.number().less(Joi.ref('price'))
+          }),
           variant: Joi.object().optional(),
         })
       )
@@ -72,5 +75,5 @@ const updatePaymentStatus = {
 module.exports = {
   createOrder,
   verifyOrder,
-  updatePaymentStatus
+  updatePaymentStatus 
 };

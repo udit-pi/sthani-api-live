@@ -72,6 +72,19 @@ const getProducts = catchAsync(async (req, res) => {
   }
 });
 
+const getUpsellingProducts = catchAsync(async (req, res) => {
+  try {
+    
+    
+    const result = await Product.find({upsell:true}).sort({ createdAt: -1 }).limit(10);
+    // console.log(result)
+    res.send(result);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+
 const getProduct = catchAsync(async (req, res) => {
   try {
     const product = await Product.findById(req.params.productId).populate({
@@ -288,6 +301,6 @@ module.exports = {
  
   getProducts,
   getProduct,
- 
+  getUpsellingProducts,
  
 };
