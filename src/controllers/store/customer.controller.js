@@ -7,6 +7,7 @@ const { updateProfileValidation } = require('../../validations/store/profile.val
 const customerModel = require('../../models/customer.model');
 const Product = require('../../models/product.model');
 const MEDIA_URL = process.env.MEDIA_URL;
+const { formatDateUAE } = require('../../utils/dateUtils')
 const {
   uploadSingleFile
 } = require("../../services/fileUpload.service");
@@ -792,7 +793,91 @@ const deleteFavBrands = catchAsync(async (req, res) => {
 
 })
 
+const getOrders = catchAsync(async (req, res) => {
+
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ error: 'Token not provided' });
+  }
+  const payload = jwt.verify(token, config.jwt.secret);
+
+
+  const customerId = payload.sub
+
+  try {
+
+
+    // Fetch the customer
+    const orders = await Customer.getOrders(customerId);
+    if (!orders) {
+      return res.status(404).json({ status: 404, message: 'No Orders found' });
+    }
+
+
+    const data = orders.map(order => {
+     
+      return {
+        Order_id: order._id,
+        orderStatus: mapOrderStatus(order.orderStatus),
+        address: order.address,
+        discount: order.discount, 
+        currency: order.currency,
+        paymentStatus: order.paymentStatus,
+        items: order.items,
+        subtotal: order.subtotal,
+        shippingAmount: order.shipping, 
+        created_at: formatDateUAE(order.createdAt),
+        
+      };
+    });
+
+    
+    res.status(200).json({
+      status: 200,
+      message: 'Orders retrieved successfully.',
+      orders: data
+    });
+  } catch (error) {
+    console.error('Error retrieving Orders:', error);
+    res.status(500).json({ status: 500, message: 'Internal Server Error' });
+  }
+
+
+
+})
+
+const mapOrderStatus = (status) => {
+  switch (status) {
+    case 'Unfulfilled':
+      return 'Order Placed';
+    case 'Fulfilled':
+      return 'Packed';
+    case 'Shipped':
+      return 'Shipped';
+    case 'Delivered':
+      return 'Delivered';
+    case 'Cancelled':
+      return 'Cancelled';
+    default:
+      return status;
+  }
+};
+
+
 module.exports = {
-  updateProfile, uploadProfilePic, getDetails, addAddress
-  , getAllAddress, deleteCustomerAddress, updateCustomerAddress, addProductToWishlist, getWishlist, removeProductFromWishlist, addFavBrand, getFavBrand, deleteFavBrands
+  updateProfile, 
+  uploadProfilePic, 
+  getDetails, 
+  addAddress, 
+  getAllAddress, 
+  deleteCustomerAddress, 
+  updateCustomerAddress, 
+  addProductToWishlist, 
+  getWishlist, 
+  removeProductFromWishlist, 
+  addFavBrand, 
+  getFavBrand, 
+  deleteFavBrands,
+  getOrders
 }
