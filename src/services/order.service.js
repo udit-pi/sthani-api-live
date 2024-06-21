@@ -44,6 +44,16 @@ const MEDIA_URL = process.env.MEDIA_URL;
 
 const createOrder = async (customer, orderData) => {
   const { items, discountAmount=0, discountCode="", shippingAmount=0, address } = orderData;
+
+  if (!items || !Array.isArray(items) || items.length === 0) {
+    throw new Error('Items are required and should be a non-empty array.');
+  }
+  
+  if (!address) {
+    throw new Error('Address is required.');
+  }
+
+
   let subtotal = 0;
   let currency = "AED";  // Assuming currency is fixed for all orders; if not, this might need to be dynamic
   const productUpdates = [];
