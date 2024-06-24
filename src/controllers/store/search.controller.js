@@ -96,8 +96,8 @@ const getSearch = catchAsync(async (req, res) => {
                     },
                     price: {
                         currency: "AED",
-                        amount: product.price,
-                        original_amount: product.discounted_price,
+                        amount: product.discounted_price ? product.discounted_price: product.price,
+                        original_amount: product.price ,
                         discount_percentage: product.discounted_price ? Math.round(((product.price - product.discounted_price) / product.price) * 100) : 0
                     }
                 }; // return
