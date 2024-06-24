@@ -505,8 +505,9 @@ const addProductToWishlist = async (req, res) => {
       },
       price: {
         currency: 'AED',
-        amount: productlist.price,
-        original_amount: productlist.discounted_price || productlist.price,
+        amount: productlist.discounted_price ? productlist.discounted_price: productlist.price,
+        original_amount: productlist.price,
+        
         discount_percentage: productlist.discounted_price ? Math.round(((productlist.price - productlist.discounted_price) / productlist.price) * 100) : 0
       }
     };
@@ -569,8 +570,8 @@ const getWishlist = async (req, res) => {
         },
         price: {
           currency: 'AED',
-          amount: product.price,
-          original_amount: product.discounted_price || product.price,
+          amount: product.discounted_price ? product.discounted_price: product.price,
+          original_amount: product.price,
           discount_percentage: product.discounted_price ? Math.round(((product.price - product.discounted_price) / product.price) * 100) : 0
         }
       };
