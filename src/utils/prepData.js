@@ -25,7 +25,7 @@ const prepareOrderItems = (items) => {
           variant_id: _id,
           image: variantRest.image || variantRest.image=="undefined" ? `${MEDIA_URL}${variantRest.image}` : ""
         },
-        Product_id: productId,
+        productId,
         name,
         sku,
         image: `${MEDIA_URL}${image}`,
