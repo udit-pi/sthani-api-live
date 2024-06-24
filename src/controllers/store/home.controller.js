@@ -25,6 +25,18 @@ const setProduct = (product, productImage, brand) => {
   try {
     const percent =  calculateDiscountedPercentage(product.price,product.discounted_price ? product.discounted_price : 0)
     const productImages = product.media ? product.media.map(filename => MEDIA_URL + filename) : [];
+    const productVariants = product.product_variants && Array.isArray(product.product_variants) ? product.product_variants.map(variant => ({
+      variant_id: variant._id,
+      name: variant.name,
+      price: variant.price,
+      discounted_price: variant.discounted_price,
+      discount_percentage: variant.discounted_price ? Math.round(((variant.price - variant.discounted_price) / variant.price) * 100) : 0,
+      stock: variant.stock,
+      sku: variant.sku,
+      image: variant.image ? `${MEDIA_URL}${variant.image}` : "",  // Prepend MEDIA_URL if image exists
+  })) : [];
+
+
     let productData = {}
     productData = {
       
@@ -46,7 +58,9 @@ const setProduct = (product, productImage, brand) => {
         original_amount: product.price,
         discount_percentage: percent,
       },
-    };
+      variants: productVariants,
+
+    }; 
     return productData;
   } catch (err) {
     throw err;
