@@ -17,7 +17,9 @@ const getFilterBrands=catchAsync(async(req,res)=>{
     const filterData =req.body.filter 
     const brand = await Brand.findById(brandsId);
     if (!brand)throw new ApiError(httpStatus.NOT_FOUND, 'Brand is  not found');
-    let productsQuery =await Product.find({ brand_id: brandsId });
+    let productsQuery =await Product.find({ brand_id: brandsId }).populate({
+        path: 'brand_id',
+    });
 
     let FilterProducts= filters(productsQuery,query,filterData)
 
@@ -26,7 +28,7 @@ const getFilterBrands=catchAsync(async(req,res)=>{
 
     const productSlideshow = brand.slide_show.map(image => MEDIA_URL + image);
     // if (product && Array.isArray(product[0].media)) {
-    //     // Map over the array of filenames and concatenate MEDIA_URL with each filename
+    //     // Map over the array of filenames and concatenate MEDIA_URL with each filename 
     //     var productImage = product[0].media.map(filename => MEDIA_URL + filename);
     //     console.log("Hello", productImage);
     //   } else {
@@ -80,6 +82,12 @@ if (brand.images && brand.images.length > 0) {
                     amount: product.price,
                     original_amount: product.discounted_price,
                     discount_percentage: product.discounted_price ? Math.round(((product.price - product.discounted_price) / product.price) * 100) : 0 
+                },
+                brand: {
+                    brand_id: product.brand_id.id,
+                    name: product.brand_id.name,
+                    logo: `${MEDIA_URL}${product.brand_id.logo}`
+
                 },
                 variants: productVariants,
             };
