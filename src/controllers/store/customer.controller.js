@@ -8,6 +8,7 @@ const customerModel = require('../../models/customer.model');
 const Product = require('../../models/product.model');
 const MEDIA_URL = process.env.MEDIA_URL;
 const { formatDateUAE } = require('../../utils/dateUtils')
+const { prepareOrderItems } = require('../../utils/prepData');
 const mapOrderStatus = require('../../utils/mapOrderStatus');
 const {
   uploadSingleFile
@@ -814,7 +815,7 @@ const getOrders = catchAsync(async (req, res) => {
     if (!orders) {
       return res.status(404).json({ status: 404, message: 'No Orders found' });
     }
-
+ 
 
     const data = orders.map(order => {
      
@@ -825,7 +826,7 @@ const getOrders = catchAsync(async (req, res) => {
         discount: order.discount, 
         currency: order.currency,
         paymentStatus: order.paymentStatus,
-        items: order.items,
+        items: prepareOrderItems(order.items),
         subtotal: order.subtotal,
         shippingAmount: order.shipping, 
         total: order.total,
