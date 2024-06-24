@@ -236,8 +236,8 @@ const productVariants = product.product_variants && Array.isArray(product.produc
       },
       price: {
           currency: "AED",
-          amount: product.price,
-          original_amount: product.discounted_price,
+          amount: product.discounted_price ? product.discounted_price: product.price,
+          original_amount: product.price ,
           discount_percentage: product.discounted_price ? Math.round(((product.price - product.discounted_price) / product.price) * 100) : 0
       },
        sku: product.sku,
@@ -309,8 +309,8 @@ function getProductBasic(product){
                     },
                     price: {
                         currency: "AED",
-                        amount: product.price,
-                        original_amount: product.discounted_price,
+                        amount: product.discounted_price ? product.discounted_price: product.price,
+                        original_amount: product.price ,
                         discount_percentage: product.discounted_price ? Math.round(((product.price - product.discounted_price) / product.price) * 100) : 0
                     },
                     variants: productVariants,
