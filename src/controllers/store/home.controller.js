@@ -52,8 +52,9 @@ const setProduct = (product, productImage, brand) => {
       link: {
         destination: "product",
         id: product.id,
-      },
+      }, 
       price: {
+        currency: "AED",
         amount: product.discounted_price ? product.discounted_price: product.price,
         original_amount: product.price,
         discount_percentage: percent,
