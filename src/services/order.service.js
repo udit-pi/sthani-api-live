@@ -191,8 +191,10 @@ const createOrder = async (customer, orderData) => {
         );
       }
     }
-
-
+  // updating image n adding path to it before sending it back.
+  order.items.forEach(item => {
+      item.image = `${MEDIA_URL}${item.image}`;
+  });
 
     return order;
 

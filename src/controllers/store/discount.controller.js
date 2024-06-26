@@ -22,24 +22,24 @@ exports.validateDiscountCode = catchAsync(async (req, res, next) => {
 
     // Check if discount status is "Active"
     if (discount.status !== 'Active') {
-        return next(new ApiError(httpStatus.FORBIDDEN, 'Discount code is not active'));
+        return next(new ApiError(httpStatus.NOT_FOUND, 'Discount code is not active'));
     }
 
     // Check if discount code has been used by the same customer
     if (discount.limitToOneUse && discount.usedBy.some((usage) => usage.customerId.toString() === customerId.toString())) {
-        return next(new ApiError(httpStatus.FORBIDDEN, 'Discount code already used'));
+        return next(new ApiError(httpStatus.NOT_FOUND, 'Discount code already used'));
     }
 
     // Check if discount code is valid based on start date and end date
     const now = new Date();
     if (!isValidDate(discount.startDate, discount.startTime, now) ||
         (discount.endDate && !isValidDate(discount.endDate, discount.endTime, now, true))) {
-        return next(new ApiError(httpStatus.FORBIDDEN, 'Discount code is not valid at this time'));
+        return next(new ApiError(httpStatus.NOT_FOUND, 'Discount code is not valid at this time'));
     }
 
     // Check if minimum purchase amount is met
     if (discount.minimumPurchaseAmount && subtotal < discount.minimumPurchaseAmount) {
-        return next(new ApiError(httpStatus.FORBIDDEN, 'Subtotal does not meet the minimum purchase amount for this discount'));
+        return next(new ApiError(httpStatus.NOT_FOUND, 'Subtotal does not meet the minimum purchase amount for this discount'));
     }
 
     // Handle free shipping discount type
