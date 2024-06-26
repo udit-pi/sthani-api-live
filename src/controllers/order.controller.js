@@ -28,7 +28,7 @@ const verifyOrder = catchAsync(async (req, res) => {
   const result = await orderService.verifyOrder(items, subtotal, discountCode, shipping);
   res.status(httpStatus.OK).send(result);
 });
-
+ 
 const createOrder = catchAsync(async (req, res) => {
   const { customer } = req;
   const orderData = req.body;
@@ -53,6 +53,13 @@ const updatePaymentStatus = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).json(order);
 });
 
+
+const deleteOrder = catchAsync(async (req, res) => {
+  const { orderId } = req.params;
+  await orderService.deleteOrderById(orderId);
+  res.status(httpStatus.OK).json({ message: 'Order deleted successfully' });
+});
+
 module.exports = {
   verifyOrder,
   createOrder,
@@ -61,4 +68,5 @@ module.exports = {
   updateOrderStatus,
   updatePaymentStatus,
   addShipmentDetails,
+  deleteOrder
 };

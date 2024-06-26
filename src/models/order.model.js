@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { toJSON, paginate } = require('./plugins');
 const Schema = mongoose.Schema;
+const OrderSequence = require('./OrderSequence.model')
 
 const orderItemSchema = mongoose.Schema(
   {
@@ -44,23 +45,23 @@ const orderItemSchema = mongoose.Schema(
         type: String,
         required: false,
       },
-      price: {
-        type: Number,
-        required: false,
-      },
-      discounted_price: {
-        type: Number,
-        required: false,
-      },
+      // price: {
+      //   type: Number,
+      //   required: false,
+      // },
+      // discounted_price: {
+      //   type: Number,
+      //   required: false,
+      // },
       sku: {
         type: String,
         required: false,
         default: "",
       },
-      image: {
-        type: String,
-        required: false,
-      },
+      // image: {
+      //   type: String,
+      //   required: false,
+      // },
     },
   },
   { _id: false }
@@ -68,7 +69,12 @@ const orderItemSchema = mongoose.Schema(
 
 const orderSchema = mongoose.Schema(
   {
-    customer: {
+    order_no: {
+      type: String,
+      unique: true,
+      required: true,
+    },
+    customer: { 
       customerId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Customer',

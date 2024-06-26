@@ -46,14 +46,14 @@ exports.validateDiscountCode = catchAsync(async (req, res, next) => {
     if (discount.discountType === 'FREE_SHIPPING') {
         return res.status(200).json({
             status: 'valid',
-            code: discount.code,
+            discountCode: discount.code,
             discountType: 'FREE_SHIPPING', // Since it's free shipping, the discount is equivalent to $0 shipping
         });
     }
 
     res.status(200).json({
         status: "valid",
-        code: discount.code,
+        discountCode: discount.code,
         discountType: 'ORDER_DISCOUNT',
         discountValue: discount.discountValue,
         discountValueType: discount.discountValueType,
