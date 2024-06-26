@@ -21,5 +21,8 @@ router
   .route('/:orderId/shipment')
   .patch(auth('manageOrders'), orderController.addShipmentDetails);
 
-  
+  router
+  .route('/:orderId')
+  .delete(auth('deleteOrders'), orderController.deleteOrder);
+
 module.exports = router;
