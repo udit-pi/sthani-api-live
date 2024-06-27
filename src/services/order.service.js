@@ -98,7 +98,7 @@ const createOrder = async (customer, orderData) => {
       };
 
       if (variant.stock < item.quantity) {
-        throw new ApiError(httpStatus.BAD_REQUEST, `Insufficient stock for variant: ${variant.name}`);
+        throw new ApiError(httpStatus.BAD_REQUEST, `Insufficient stock: ${product.name} - ${variant.name}`);
       }
       productUpdates.push({ product: product._id, variant: variant._id, quantity: item.quantity });
     } else {
