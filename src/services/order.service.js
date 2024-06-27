@@ -57,7 +57,7 @@ const createOrder = async (customer, orderData) => {
   if (!address) {
     throw new Error('Address is required.');
   }
-  
+
 
   let subtotal = 0;
   let currency = "AED";  // Assuming currency is fixed for all orders; if not, this might need to be dynamic
@@ -79,7 +79,7 @@ const createOrder = async (customer, orderData) => {
     let priceToUse;
     let imageToUse = product.media && product.media[0] ? `${product.media[0]}` : "";
     let variantDetails = {};
-    
+
     if (item.variant && item.variant.variant_id) {
       const variant = product.product_variants.find(v => v._id.toString() === item.variant.variant_id);
       if (!variant) {
@@ -87,14 +87,14 @@ const createOrder = async (customer, orderData) => {
       }
 
       priceToUse = item.variant.discounted_price || variant.price;
-      if(variant.image) imageToUse = `${variant.image}`;
+      if (variant.image) imageToUse = `${variant.image}`;
       variantDetails = {  // Collect variant details for the order item
         variant_id: variant._id,
         name: variant.name,
         // price: variant.price,
         // discounted_price: variant.discounted_price,
         sku: variant.sku,
-       // image: variant.image && `${variant.image}`
+        // image: variant.image && `${variant.image}`
       };
 
       if (variant.stock < item.quantity) {
@@ -103,7 +103,7 @@ const createOrder = async (customer, orderData) => {
       productUpdates.push({ product: product._id, variant: variant._id, quantity: item.quantity });
     } else {
       priceToUse = item.discounted_price || product.price;
-      
+
       if (product.stock < item.quantity) {
         throw new ApiError(httpStatus.BAD_REQUEST, `Insufficient stock for product: ${product.name}`);
       }
@@ -129,7 +129,7 @@ const createOrder = async (customer, orderData) => {
     if (item.variant && item.variant.variant_id && item.variant.sku != "") {
       orderItem.variant = variantDetails;
     }
-   // console.log(imageToUse);
+    // console.log(imageToUse);
     orderItems.push(orderItem);
 
     delete variantDetails;
@@ -175,7 +175,7 @@ const createOrder = async (customer, orderData) => {
     }
 
 
-   await order.save();
+    await order.save();
 
     // Decrement stock after order is successfully saved
     for (const update of productUpdates) {
@@ -191,12 +191,11 @@ const createOrder = async (customer, orderData) => {
         );
       }
     }
-  // updating image n adding path to it before sending it back.
-  order.items.forEach(item => {
-      item.image = `${MEDIA_URL}${item.image}`;
-  });
 
-    return order;
+
+    orderDetails = prepOrder(order);
+
+    return orderDetails;
 
   } catch (error) {
     console.error('Failed to save the order:', error);
@@ -216,12 +215,14 @@ const updatePaymentStatus = async (orderId, status, transactionId, errorMessage)
   }
 
   order.paymentStatus = status;
-  order.transactionId = transactionId; // Assuming you want to store this.
-  order.paymentErrorMessage = errorMessage; // Optional: Store any error message.
+  order.transactionId = transactionId;
+  order.paymentErrorMessage = errorMessage;
 
   await order.save();
+  
+  orderDetails = prepOrder(order);
 
-  return order;
+  return orderDetails;
 };
 
 
@@ -239,34 +240,21 @@ const getOrderById = async (id) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
   }
 
-  // Construct a data object with the order details
-  const orderDetails = {
-    customer:order.customer,
-    Order_id: order._id,
-    order_no: order.order_no,
-    orderStatus: mapOrderStatus(order.orderStatus),  // Assumes mapOrderStatus is a function you've defined
-    address: order.address,
-    discount: order.discount,
-    currency: order.currency,
-    paymentStatus: order.paymentStatus,
-    items: order.items,
-    subtotal: order.subtotal,
-    shippingAmount: order.shipping,
-    total: order.total,
-    created_at: formatDateUAE(order.createdAt)  // Assumes formatDateUAE is correctly implemented
-  };
+  orderDetails = prepOrder(order);
 
-  // Return the constructed data object
   return orderDetails;
 };
 
 const updateOrderStatus = async (id, status) => {
   const order = await Order.findByIdAndUpdate(id, { orderStatus: status }, { new: true });
-  return order;
+  orderDetails = prepOrder(order);
+
+  return orderDetails;
 };
 
 const addShipmentDetails = async (id, shipmentDetails) => {
   const order = await Order.findByIdAndUpdate(id, { shipmentDetails }, { new: true });
+  order = prepOrder(order);
   return order;
 };
 
@@ -277,6 +265,49 @@ const deleteOrderById = async (id) => {
   }
   await order.remove();
 };
+
+
+function prepOrder(orderData) {
+  // Convert Mongoose document to JSON if needed
+  if (orderData.toJSON) {
+    orderData = orderData.toJSON();
+  }
+
+  if (orderData.id) {
+    orderData.Order_id = orderData.id.toString(); // Ensure the ID is a string if needed
+    delete orderData.id; // Remove the original _id field
+  }
+  
+  orderData.items.forEach(item => {
+    if (item.image && !item.image.startsWith(MEDIA_URL)) {
+      item.image = `${MEDIA_URL}${item.image}`;
+    }
+  });
+
+  // Flatten and adjust discount and shipping details
+  if (orderData.discount) {
+    orderData.discountCode = orderData.discount.code;
+    orderData.discountAmount = orderData.discount.amount;
+    delete orderData.discount; // Remove the old discount structure
+  }
+
+  if (orderData.shipping) {
+    orderData.shippingAmount = orderData.shipping;
+    delete orderData.shipping; // Remove the old shipping key
+  }
+
+  // Include formatted date if applicable
+  if (orderData.createdAt && formatDateUAE) {
+    orderData.createdAt_formatted = formatDateUAE(orderData.createdAt);
+  }
+
+  // Map status if function is available
+  if (orderData.orderStatus && mapOrderStatus) {
+    orderData.orderStatus = mapOrderStatus(orderData.orderStatus);
+  }
+
+  return orderData;
+}
 
 module.exports = {
 
