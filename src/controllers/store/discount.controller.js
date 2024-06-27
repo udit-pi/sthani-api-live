@@ -42,12 +42,21 @@ exports.validateDiscountCode = catchAsync(async (req, res, next) => {
         return next(new ApiError(httpStatus.NOT_FOUND, 'Subtotal does not meet the minimum purchase amount for this discount'));
     }
 
+    // Calculate the final discount value based on the discount type and value
+    let finalDiscountValue = 0;
+    if (discount.discountValueType === 'PERCENTAGE') {
+        finalDiscountValue = (subtotal * (discount.discountValue / 100));
+    } else if (discount.discountValueType === 'AMOUNT') {
+        finalDiscountValue = discount.discountValue;
+    }
+
     // Handle free shipping discount type
     if (discount.discountType === 'FREE_SHIPPING') {
         return res.status(200).json({
             status: 'valid',
             discountCode: discount.code,
             discountType: 'FREE_SHIPPING', // Since it's free shipping, the discount is equivalent to $0 shipping
+            discountValue: 0 
         });
     }
 
@@ -57,6 +66,7 @@ exports.validateDiscountCode = catchAsync(async (req, res, next) => {
         discountType: 'ORDER_DISCOUNT',
         discountValue: discount.discountValue,
         discountValueType: discount.discountValueType,
+        discountValue: finalDiscountValue,
         
     });
 });
