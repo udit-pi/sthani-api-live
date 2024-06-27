@@ -37,11 +37,12 @@ exports.filters = (productsQuery, query = {}, filterData = {}) => {
         });
     }
 
-    // Filter by price range
-    if (price_min !== undefined && price_max !== undefined) {
-        sortedProducts = sortedProducts.filter(product =>
-            product.price >= price_min && product.price <= price_max
-        );
+     // Filter by price range
+     if (price_min !== undefined) {
+        sortedProducts = sortedProducts.filter(product => product.price >= price_min);
+    }
+    if (price_max !== undefined) {
+        sortedProducts = sortedProducts.filter(product => product.price <= price_max);
     }
 
     // Sorting
