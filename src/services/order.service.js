@@ -4,7 +4,7 @@ const httpStatus = require('http-status');
 const MEDIA_URL = process.env.MEDIA_URL;
 const mapOrderStatus = require('../utils/mapOrderStatus');
 const { formatDateUAE } = require('../utils/dateUtils')
-const { sendOrderCreatedEmail } = require('../utils/emailService');
+const { sendOrderCreatedEmail, sendOrderStatusUpdatedEmail, sendPaymentStatusUpdatedEmail } = require('../utils/emailService');
 const OrderSequence = require('../models/OrderSequence.model');
 
 
@@ -221,7 +221,8 @@ const updatePaymentStatus = async (orderId, status, transactionId, errorMessage)
   order.paymentErrorMessage = errorMessage;
 
   await order.save();
-  
+  await sendPaymentStatusUpdatedEmail(order);
+
   orderDetails = prepOrder(order);
 
   return orderDetails;
@@ -250,6 +251,8 @@ const getOrderById = async (id) => {
 const updateOrderStatus = async (id, status) => {
   const order = await Order.findByIdAndUpdate(id, { orderStatus: status }, { new: true });
   orderDetails = prepOrder(order);
+
+  await sendOrderStatusUpdatedEmail(order);
 
   return orderDetails;
 };
