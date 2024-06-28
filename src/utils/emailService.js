@@ -95,8 +95,7 @@ const generateOrderItemsTable = (order) => {
     <table border="0" cellpadding="5" cellspacing="0" class="order_summary_table">
     <thead>
             <tr>
-              <th ></th>
-              <th>Quantity</th>
+              <th colspan="2">Item(s)</th>
               <th>Price</th>
             </tr>
           </thead>
