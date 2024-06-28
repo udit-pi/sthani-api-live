@@ -26,6 +26,24 @@ apiInstance.sendTransacEmail(sendSmtpEmail).then(function (data) {
 });
 };
 
+const getStatusMessage = (statusType, status) => {
+  const messages = {
+    paymentStatus: {
+      Pending: 'Your payment is being processed.',
+      Paid: 'We have received your payment.',
+      Failed: 'Your payment could not be processed.'
+    },
+    orderStatus: {
+      Unfulfilled: 'Your order is being processed.',
+      Fulfilled: 'Your order has been fulfilled.',
+      Shipped: 'Your order has been shipped.',
+      Delivered: 'Your order has been delivered.',
+      Cancelled: 'Your order has been cancelled.'
+    }
+  };
+
+  return messages[statusType][status] || "Status update"; // Default message if status not mapped
+};
 
 const generateEmailTemplate = (subject, content) => {
   
@@ -108,14 +126,14 @@ const generateOrderItemsTable = (order) => {
 
 const generateTotalSummary = (order) => {
 
-  const shippingLabel = order.shipping === 0 ? "FREE" : `AED ${order.shipping.toFixed(2)}`;
+  const shippingLabel = order.shipping === 0 ? "FREE" : `AED ${order.shipping?.toFixed(2)}`;
 
   let discountRow = '';
   if (order.discount && order.discount.amount > 0) {
     discountRow = `
       <tr>
         <td colspan="2" style="text-align:right !important;">Discount (${order.discount.code}):</td>
-        <td   style="text-align:right !important;">AED -${order.discount.amount.toFixed(2)}</td>
+        <td   style="text-align:right !important;">AED -${order.discount?.amount?.toFixed(2)}</td>
       </tr>
     `;
   }
@@ -142,21 +160,23 @@ module.exports = {
   },
 
   sendPaymentStatusUpdatedEmail: async (order) => {
-    const subject = 'Payment Status Updated';
+    const message = getStatusMessage('paymentStatus', order.paymentStatus);
+    const subject = `${message}`;
     const orderItemsTable = generateOrderItemsTable(order);
     
-    const content = `<h1>Payment Status Update</h1>
-                     <p>Your payment status for order ID ${order.order_bo} is now ${order.paymentStatus}</p>
+    const content = `<h1>${message}</h1>
+                     <p>Your payment status for order ID ${order.order_no} is now ${order.paymentStatus}.</p>
                      <div style="padding:20px 0;">${orderItemsTable}</div>`;
     await sendEmail(order.customer.email, order.customer.name, subject, content);
   },
-
+  
   sendOrderStatusUpdatedEmail: async (order) => {
-    const subject = 'Order Status Updated';
+    const message = getStatusMessage('orderStatus', order.orderStatus);
+    const subject = `${message}`;
     const orderItemsTable = generateOrderItemsTable(order);
     
-    const content = `<h1>Order Status Update</h1>
-                     <p>Your order ID ${order._id} status is now ${order.orderStatus}</p>
+    const content = `<h1>${message}</h1>
+                     <p>Your order ID ${order.order_no} status is now ${order.orderStatus}.</p>
                      <div style="padding:20px 0;">${orderItemsTable}</div>`;
     await sendEmail(order.customer.email, order.customer.name, subject, content);
   },
