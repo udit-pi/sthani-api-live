@@ -159,7 +159,7 @@ const createOrder = async (customer, orderData) => {
   });
 
   try {
-    // await sendOrderCreatedEmail(order);
+     
 
     // Ensure order_no is set before saving
     if (!order.order_no) {
@@ -174,7 +174,8 @@ const createOrder = async (customer, orderData) => {
       order.order_no = orderNo.toString();
     }
 
-
+    
+    
     await order.save();
 
     // Decrement stock after order is successfully saved
@@ -192,6 +193,7 @@ const createOrder = async (customer, orderData) => {
       }
     }
 
+    await sendOrderCreatedEmail(order);
 
     orderDetails = prepOrder(order);
 

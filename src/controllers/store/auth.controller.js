@@ -8,7 +8,7 @@ const { tokenService, authService } = require('../../services');
 const mailSender = require('../../utils/mailSender');
 const config = require('../../config/config');
 const jwt = require('jsonwebtoken');
-const { sendBrevoEmail, sendBrevoSMS } = require('../../utils/brevoMailSender');
+const { sendOTPEmail } = require('../../utils/emailService');
 
 async function sendSMS(mobile, otp) {
   try {
@@ -35,15 +35,17 @@ async function sendVerificationEmail(email, otp) {
   // console.log(email)
   if (email) {
     try {
-      const mailResponse = await mailSender(
-        email,
-        'Verification Email',
-        `<h1>Please confirm your OTP</h1>
-         <p>Here is your OTP code: ${otp}</p>`
-      );
+      // const mailResponse = await mailSender(
+      //   email,
+      //   'Verification Email',
+      //   `<h1>Please confirm your OTP</h1>
+      //    <p>Here is your OTP code: ${otp}</p>`
+      // );
+
+      mailResponse = await sendOTPEmail(email, otp);
 
       // const mailResponse = await sendBrevoEmail(email,otp)
-      console.log('Email sent successfully: ', mailResponse);
+      //console.log('Email sent successfully');
       return true;
     } catch (error) {
       console.log('Error occurred while sending email: ', error);
