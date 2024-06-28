@@ -96,7 +96,7 @@ const generateOrderItemsTable = (order) => {
     <thead>
             <tr>
               <th colspan="2">Item(s)</th>
-              <th>Price</th>
+              <th style="text-align:right !important;">Price</th>
             </tr>
           </thead>
       <tbody>
