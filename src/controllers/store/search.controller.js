@@ -1,13 +1,10 @@
 const brandModel = require("../../models/brand.model");
 const categoryModel = require("../../models/category.model");
 const productModel = require("../../models/product.model");
-const { filters } = require("../../services/store/filter.service");
+const { filters, searchByKeyword } = require("../../services/store/filter.service");
 const catchAsync = require("../../utils/catchAsync");
 const pick = require("../../utils/pick");
 const MEDIA_URL = process.env.MEDIA_URL;
-
-
-
 
 
 
@@ -23,61 +20,36 @@ const getSearch = catchAsync(async (req, res) => {
         return res.status(400).send({ message: 'Search keyword is required' });
     }
 
-    //main product which i want to search
+    const products = await searchByKeyword(search_keyword);
 
-
-    const productQuery = {
-        name: { $regex: search_keyword, $options: 'i' }
-    };
-    // Search for products by brand name
-    const brands = await brandModel.find({ name: { $regex: search_keyword, $options: 'i' } });
-    const brandIds = brands.map(brand => brand._id);
-    const brandQuery = {
-        brand_id: { $in: brandIds }
-    };
-
-
-    //seacrh for category also
-    const categories = await categoryModel.find({ name: { $regex: search_keyword, $options: 'i' } });
-    const categoryIds = categories.map(category => category._id);
-    const categoryQuery = {
-        categories: { $in: categoryIds }
-    };
-
-
-    //combine all the query 
-    //among 3 any seacrh work 
-
-
-    const combinedQuery = {
-        $or: [productQuery, brandQuery, categoryQuery]
-    };
-
-
-    const products = await productModel.find(combinedQuery).populate('brand_id')
-
-
+    if (!products) {
+        res.status(404).json("No Products found")
+    }
     const filterProduct = filters(products, query)
 
     const productData = filterProduct.sortedProducts
     const pageNumber = filterProduct.page
 
+    const uniqueBrands = new Map();
 
+    productData.forEach(product => {
+        if (product.brand_id && !uniqueBrands.has(product.brand_id.id)) {
+            uniqueBrands.set(product.brand_id.id, {
+                id: product.brand_id.id,
+                name: product.brand_id.name,
+                logo: product.brand_id.logo ? `${MEDIA_URL}${product.brand_id.logo}` : null
+            });
+        }
+    });
 
-
-
-
+    const brandsArray = Array.from(uniqueBrands.values());
 
     const response = {
         status: 200,
         message: 'Success',
         data: {
 
-            brands: productData.map(product => ({
-                id: product.brand_id.id,
-                name: product.brand_id.name,
-                logo: product.brand_id.logo && `${MEDIA_URL}${product.brand_id.logo}`
-            })),
+            brands: brandsArray,
 
             products: productData.map(product => {
                 const productImages = product.media ? product.media.map(filename => filename && MEDIA_URL + filename) : [];
@@ -96,14 +68,14 @@ const getSearch = catchAsync(async (req, res) => {
                     },
                     price: {
                         currency: "AED",
-                        amount: product.discounted_price ? product.discounted_price: product.price,
-                        original_amount: product.price ,
+                        amount: product.discounted_price ? product.discounted_price : product.price,
+                        original_amount: product.price,
                         discount_percentage: product.discounted_price ? Math.round(((product.price - product.discounted_price) / product.price) * 100) : 0
                     }
                 }; // return
             })
 
-            
+
             // products: product.map(product => ({
             //     Product_id: product._id,
             //     name: product.name,
@@ -128,6 +100,9 @@ const getSearch = catchAsync(async (req, res) => {
 
     res.status(200).json(response)
 })
+
+
+
 
 module.exports = { getSearch }
 

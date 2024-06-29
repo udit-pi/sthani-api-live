@@ -4,29 +4,35 @@ const Product = require('../../models/product.model');
 const ApiError = require("../../utils/ApiError");
 const httpStatus = require("http-status");
 const catchAsync = require("../../utils/catchAsync");
-
+const { searchByKeyword } = require("../../services/store/filter.service");
 
 const Filters = catchAsync(async (req, res) => {
 
 const {pagetype,id}=req.params
 
-
+console.log(req)
 
 var productsQuery
 if(pagetype=="category"){
     var category = await Category.findById(id);
     if (!category)throw new ApiError(httpStatus.NOT_FOUND, 'Category not found');
-  productsQuery =await Product.find({ categories: id});
+    productsQuery =await Product.find({ categories: id});
 }
 if(pagetype=="brand"){
     var brand = await Brand.findById(id);
     if (!brand)throw new ApiError(httpStatus.NOT_FOUND, 'Brand is  not found');
-   productsQuery =await Product.find({ brand_id: id });
+    productsQuery =await Product.find({ brand_id: id });
 }
+
+// if(pagetype=="search"){
+   
+//    productsQuery =await searchByKeyword(req.body.search_keyword);
+// }
+
 const categoryIds = [...new Set(productsQuery.flatMap(product => product.categories))];
 const brandIds = [...new Set(productsQuery.map(product => product.brand_id))];
 
-
+ 
 // Fetch category names
 const categories = await Category.find({ _id: { $in: categoryIds } }, 'name').lean();
 const categoryResponse = categories.map(category => ({ id: category._id, name: category.name }));
