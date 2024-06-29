@@ -1,13 +1,39 @@
+const brandModel = require("../../models/brand.model");
+const categoryModel = require("../../models/category.model");
+const productModel = require("../../models/product.model");
+
+exports.searchByKeyword = async (search_keyword) => {
+    const brands = await brandModel.find({ name: { $regex: search_keyword, $options: 'i' } });
+    const brandIds = brands.map(brand => brand._id);
+
+    const categories = await categoryModel.find({ name: { $regex: search_keyword, $options: 'i' } });
+    const categoryIds = categories.map(category => category._id);
+
+    const combinedQuery = {
+        $or: [
+            { name: { $regex: search_keyword, $options: 'i' } },
+            { brand_id: { $in: brandIds } },
+            { categories: { $in: categoryIds } }
+        ]
+    };
+
+    const products = await productModel.find(combinedQuery).populate('brand_id');
+    console.log("Products found:", products);
+    return products;
+};
+
+
+
 exports.filters = (productsQuery, query = {}, filterData = {}) => {
     const pageSize = 10; // Number of products per page
     let pageNumber = 1;
     const { sort, page } = query;
     const { brand_ids, category_ids, price_min, price_max } = filterData;
 
-    console.log("Initial Products Count:", productsQuery.length);
-    productsQuery.forEach(product => {
-        console.log(`Product Name: ${product.name}, Brand ID: ${product.brand_id ? product.brand_id._id : 'No Brand'}, Categories: ${product.categories}`);
-    });
+    // console.log("Initial Products Count:", productsQuery.length);
+    // productsQuery.forEach(product => {
+    //     console.log(`Product Name: ${product.name}, Brand ID: ${product.brand_id ? product.brand_id._id : 'No Brand'}, Categories: ${product.categories}`);
+    // });
 
     let sortedProducts = [...productsQuery];
 
