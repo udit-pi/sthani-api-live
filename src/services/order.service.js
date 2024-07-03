@@ -1,5 +1,6 @@
 const { Order, Product, Discount, Customer, ShippingRate } = require('../models');
 const ApiError = require('../utils/ApiError');
+const axios = require('axios');
 const httpStatus = require('http-status');
 const MEDIA_URL = process.env.MEDIA_URL;
 const mapOrderStatus = require('../utils/mapOrderStatus');
@@ -195,6 +196,13 @@ const createOrder = async (customer, orderData) => {
 
     await sendOrderCreatedEmail(order);
 
+    // Update the order with a new status log entry
+    order.statusLogs.push({
+      status: 'Order Placed',
+      description: `Order successfully placed.`
+    });
+    await order.save();
+
     orderDetails = prepOrder(order);
 
     return orderDetails;
@@ -219,6 +227,13 @@ const updatePaymentStatus = async (orderId, status, transactionId, errorMessage)
   order.paymentStatus = status;
   order.transactionId = transactionId;
   order.paymentErrorMessage = errorMessage;
+
+  // Update the order with a new status log entry
+  order.statusLogs.push({
+    status: `New Payment Status: ${status}` ,
+    description: errorMessage && `Error ${errorMessage}` + transactionId && `TransactionId: ${transactionId}`
+  });
+  
 
   await order.save();
   await sendPaymentStatusUpdatedEmail(order);
@@ -314,6 +329,87 @@ function prepOrder(orderData) {
   return orderData;
 }
 
+
+const createIQOrder = async (orderId) => {
+  const order = await Order.findById(orderId).populate('items.productId'); 
+  if (!order) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
+  }
+
+  // Construct the payload from the order data
+  const payload = {
+    client_reference: `${order.order_no}`,
+    order_type: "XDOCK",
+    total_price: order.total,
+    currency: order.currency,
+    payment_type: "PREPAID", 
+    note: `${order.order_no}`,
+    
+    consignee: {
+      name: order.customer.name,
+      surname: order.customer.name,
+      phone: order.customer.mobile,
+      mobile: order.customer.mobile,
+      company: order.customer.name
+    },
+    skus: order.items.map(item => ({
+      code: item.sku, 
+      quantity: item.quantity,
+      description: item.name, 
+      price: item.price,
+      supplierId: null, 
+      supplierAddress: null 
+    })),
+    shipping_address: {
+      country: "UAE",
+      state: order.address.state,
+      city: order.address.city,
+      address_1: order.address.address_line // Assuming 'address_line' contains the full address
+    },
+    parcel: {
+      total_weight: 1,
+      total_volume: 1,
+      box_number: 1
+    }
+  };
+
+  try {
+
+    const headers = {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      "Authorization": `Bearer ${process.env.IQ_FULFILLMENT_TOKEN}`
+    };
+
+    const iqResponse = await axios.post(process.env.IQ_FULFILLMENT_CREATE_ORDER_URL, payload, { headers });
+
+    // update main order status
+    order.orderStatus = "Confirmed";
+
+    // Update the order with a new status log entry
+    order.statusLogs.push({
+      status: 'Sent to IQ Fulfillment',
+      description: `Order successfully sent to IQ Fulfillment. Response: ${JSON.stringify(iqResponse.data)}`
+    });
+    await order.save();
+
+    return {
+      message: "Order sent to IQ Fulfillment successfully!",
+      iqFulfillmentResponse: iqResponse.data
+    };
+  } catch (error) {
+    console.error('Failed to create order in IQ Fulfillment:', error);
+    // Log the error in status logs
+    order.statusLogs.push({
+      status: 'IQ Fulfillment Error',
+      description: `Failed to send order to IQ Fulfillment. Error: ${error.message}`
+    });
+    await order.save();
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `Failed to create order in IQ Fulfillment: ${error.message}`);
+  }
+};
+
+
 module.exports = {
 
   createOrder,
@@ -322,5 +418,6 @@ module.exports = {
   updateOrderStatus,
   addShipmentDetails,
   updatePaymentStatus,
-  deleteOrderById
+  deleteOrderById,
+  createIQOrder
 };

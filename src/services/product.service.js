@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+require('dotenv').config();
+const axios = require('axios');
 
 const httpStatus = require("http-status");
 const { Product, Brand, Category, ProductMedia } = require("../models");
@@ -262,7 +264,7 @@ const createProduct = async (productBody, req) => {
       media: newMedia,
       price: productBody.price,
       discounted_price: productBody.discounted_price,
-      is_upsell : productBody.is_upsell,
+      is_upsell: productBody.is_upsell,
 
       cost: productBody.cost,
       published: productBody.published,
@@ -436,55 +438,100 @@ const deleteProductById = async (productId) => {
 };
 
 
-// const syncProductsWithIQ = async () => {
-//   const unsyncedProducts = await Product.find({ published: true, isSyncedwithFullfillment: false });
-//   const syncedProducts = await Product.find({ published: true, isSyncedwithFullfillment: true });
+const syncProductsWithIQ = async () => {
+  // Fetch all products
+  const allProducts = await Product.find({ published: true });
 
-//   const createData = = unsyncedProducts.map(product => {
-//     // Construct the payload according to IQ's API requirements
-//     return {
-//       "SkuCode": product.sku,
-//       "Description": product.description,
-//       "IsActive": product.published ? true : false,
-//       "Name": product.name,
-//       "PackingQty": product.quantity_min || 1,
-//       "Price": product.price,
-//       "Weight": product.weight,
-//       "Length": product.length,
-//       "Width": product.width,
-//       "Height": product.height,
-//       "CostPrice": product.cost,
-//       // add other required fields based on IQ's documentation
-//     };
-//   });
-//   const updates = syncedProducts.map(product => {
-//     // Construct the payload according to IQ's API requirements
-//     return {
-//       "SkuCode": product.sku,
-//       "Description": product.description,
-//       "IsActive": product.published ? true : false,
-//       "Name": product.name,
-//       "PackingQty": product.quantity_min || 1,
-//       "Price": product.price,
-//       "Weight": product.weight,
-//       "Length": product.length,
-//       "Width": product.width,
-//       "Height": product.height,
-//       "CostPrice": product.cost,
-//       // add other required fields based on IQ's documentation
-//     };
-//   });
+  // Map product and variant to SKU structure and prepare payloads
+  const mapProductToSKU = (product, variant = null) => ({
+      sku: variant ? variant._id || product._id : product._id,
+      alternative_sku_name: variant ? variant.sku || product.sku : product.sku,
+      sku_type: "Regular",
+      description: variant ? `${product.name} - ${variant.name}` : product.name,
+      weight: variant ? variant.weight || product.weight : product.weight,
+      cube: variant ? (variant.length * variant.width * variant.height) : (product.length * product.width * product.height),
+      length: variant ? variant.length || product.length : product.length,
+      width: variant ? variant.width || product.width : product.width,
+      height: variant ? variant.height || product.height : product.height,
+      origin_country: "UAE",
+      productId: product._id,
+      variantId: variant ? variant._id : null
+  });
 
-//   // Assuming you have a function to send data to IQ
-//   const response = await sendToIQFulfillmentAPI(updates);
+  const createPayload = {
+      skus: allProducts.reduce((acc, product) => {
+          (product.product_variants && product.product_variants.length > 0 ? product.product_variants : [null]).forEach(variant => {
+              if (variant ? !variant.isSyncedWithIQ : !product.isSyncedWithIQ) {
+                  acc.push(mapProductToSKU(product, variant));
+              }
+          });
+          return acc;
+      }, [])
+  };
 
-//   // Update the isSyncedWithIQ flag after successful sync
-//   if (response.success) {
-//     await Product.updateMany({ _id: { $in: unsyncedProducts.map(p => p._id) } }, { isSyncedWithIQ: true });
-//   }
+  const updatePayload = {
+      skus: allProducts.reduce((acc, product) => {
+          (product.product_variants && product.product_variants.length > 0 ? product.product_variants : [null]).forEach(variant => {
+              if (variant ? variant.isSyncedWithIQ : product.isSyncedWithIQ) {
+                  acc.push(mapProductToSKU(product, variant));
+              }
+          });
+          return acc;
+      }, [])
+  };
 
-//   return response;
-// };
+  const headers = {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      "Authorization": `Bearer ${process.env.IQ_FULFILLMENT_TOKEN}`,
+  };
+
+  console.log("Products to create", createPayload.length)
+  console.log("Products to update", updatePayload.length)
+
+  // Perform API requests and update database
+  try {
+      let createdList = [], updatedList = [];
+      if (createPayload.skus.length > 0) {
+          const createResponse = await axios.post(process.env.IQ_FULFILLMENT_BULK_SKU_CREATE_URL, createPayload, { headers });
+          if (createResponse.data.success) {
+              createdList = createPayload.skus;
+              // Update sync status for created items
+              await Promise.all(createdList.map(async sku => {
+                  const updateCondition = sku.variantId ? { _id: sku.productId, "product_variants._id": sku.variantId } : { _id: sku.productId };
+                  const updateAction = sku.variantId ? { "$set": { "product_variants.$.isSyncedWithIQ": true, "product_variants.$.lastSyncWithIQ": new Date() }} : { "$set": { isSyncedWithIQ: true, lastSyncWithIQ: new Date() }};
+                  await Product.updateOne(updateCondition, updateAction);
+              }));
+          }
+      }
+
+      if (updatePayload.skus.length > 0) {
+          const updateResponse = await axios.post(process.env.IQ_FULFILLMENT_BULK_SKU_UPDATE_URL, updatePayload, { headers });
+          if (updateResponse.data.success) {
+              updatedList = updatePayload.skus;
+              // Update sync status for updated items
+              await Promise.all(updatedList.map(async sku => {
+                  const updateCondition = sku.variantId ? { _id: sku.productId, "product_variants._id": sku.variantId } : { _id: sku.productId };
+                  const updateAction = sku.variantId ? { "$set": { "product_variants.$.isSyncedWithIQ": true, "product_variants.$.lastSyncWithIQ": new Date() }} : { "$set": { isSyncedWithIQ: true, lastSyncWithIQ: new Date() }};
+                  await Product.updateOne(updateCondition, updateAction);
+              }));
+          }
+      }
+
+      return {
+          success: true,
+          details: 'Products synced with IQ Fulfillment',
+          created: createdList.map(sku => sku.sku),
+          updated: updatedList.map(sku => sku.sku)
+      };
+  } catch (error) {
+      console.error('Error syncing with IQ Fulfillment:', error);
+      return { success: false, error: error.message };
+  }
+};
+
+
+
 
 
 
@@ -495,4 +542,5 @@ module.exports = {
   getProductById,
   updateProductById,
   deleteProductById,
+  syncProductsWithIQ
 };

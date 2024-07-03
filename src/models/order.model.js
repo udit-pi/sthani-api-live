@@ -3,6 +3,21 @@ const { toJSON, paginate } = require('./plugins');
 const Schema = mongoose.Schema;
 const OrderSequence = require('./OrderSequence.model')
 
+const orderStatusLogSchema = mongoose.Schema({
+  timestamp: {
+    type: Date,
+    default: Date.now
+  },
+  status: {
+    type: String,
+    required: true
+  },
+  description: {
+    type: String,
+    required: false
+  }
+}, { _id: false });
+
 const orderItemSchema = mongoose.Schema(
   {
     productId: {
@@ -136,8 +151,8 @@ const orderSchema = mongoose.Schema(
     },
     orderStatus: {
       type: String,
-      enum: ['Unfulfilled', 'Fulfilled', 'Shipped', 'Delivered', 'Cancelled'],
-      default: 'Unfulfilled',
+      enum: ['Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled', 'Returned'],
+      default: 'Pending',
     },
     transactionId: { 
       type: String, 
@@ -170,6 +185,8 @@ const orderSchema = mongoose.Schema(
         required: false,
       },
     },
+
+    statusLogs: [orderStatusLogSchema],
   },
   {
     timestamps: true,

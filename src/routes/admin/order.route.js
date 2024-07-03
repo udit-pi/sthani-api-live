@@ -21,8 +21,12 @@ router
   .route('/:orderId/shipment')
   .patch(auth('manageOrders'), orderController.addShipmentDetails);
 
-  router
+router
   .route('/:orderId')
   .delete(auth('deleteOrders'), orderController.deleteOrder);
+
+router
+  .route('/:orderId/createIQOrder')
+  .post(auth('fulfillOrder'), orderController.createIQOrder);
 
 module.exports = router;
