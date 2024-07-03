@@ -135,6 +135,10 @@ const productSchema = mongoose.Schema(
             type: String,
             required: false,
           },
+          isSyncedWithIQ: {
+            type: Boolean,
+            default: false,
+          },
         },
       ],
       required: false,
@@ -155,6 +159,14 @@ const productSchema = mongoose.Schema(
       ],
     },
    
+    isSyncedWithIQ: {
+      type: Boolean,
+      default: false,
+    },
+
+    lastSyncWithIQ: {
+      type: Date,
+    },
   
  },
   

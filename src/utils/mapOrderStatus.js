@@ -1,8 +1,10 @@
 const mapOrderStatus = (status) => {
     switch (status) {
-      case 'Unfulfilled':
+      case 'Pending':
         return 'Order Placed';
-      case 'Fulfilled':
+      case 'Confirmed':
+          return 'Confirmed';
+      case 'Packed':
         return 'Packed';
       case 'Shipped':
         return 'Shipped';

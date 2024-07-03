@@ -60,6 +60,13 @@ const deleteOrder = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).json({ message: 'Order deleted successfully' });
 });
 
+const createIQOrder = catchAsync(async (req, res) => {
+  const { orderId } = req.params;
+  const result = await orderService.createIQOrder(orderId);
+  res.status(httpStatus.OK).json(result);
+});
+
+
 module.exports = {
   verifyOrder,
   createOrder,
@@ -68,5 +75,6 @@ module.exports = {
   updateOrderStatus,
   updatePaymentStatus,
   addShipmentDetails,
-  deleteOrder
+  deleteOrder,
+  createIQOrder
 };

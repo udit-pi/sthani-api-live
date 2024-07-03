@@ -12,6 +12,7 @@ const formidable = require('formidable');
 const { uploadSingleFile, uploadMultipleMediaFiles } = require('../services/fileUpload.service');
 const { createProductMedia } = require('./product_media.controller');
 const product_variantModel = require('../models/product_variant.model');
+const { syncProductsWithIQ } = require('../services/product.service');
 
 const uploadFolder = process.env.UPLOAD_FOLDER || '/var/www/html/media';
 
@@ -176,10 +177,35 @@ const deleteProduct = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).json({ message: 'Product deleted successfully!' });
 });
 
+
+const syncProductsWithIQController = catchAsync(async (req, res) => {
+  const result = await syncProductsWithIQ();
+  if (result.success) {
+    // Send back a successful response with structured data
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: 'Products synced successfully',
+      data: {
+        created: result.created,  // List of created product details
+        updated: result.updated   // List of updated product details
+      }
+    });
+  } else {
+    // Handle the case where syncing fails
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: 'Failed to sync products',
+      error: result.error
+    });
+  }
+});
+
+
 module.exports = {
   createProduct,
   getProducts,
   getProduct,
   updateProduct,
   deleteProduct,
+  syncProductsWithIQController
 };

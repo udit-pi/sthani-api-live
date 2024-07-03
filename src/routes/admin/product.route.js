@@ -17,4 +17,7 @@ router
   .patch(auth('manageProducts'),productController.updateProduct)
   .delete(auth('manageProducts'), validate(productValidation.deleteProduct), productController.deleteProduct);
 
+router
+  .route('/sync-iq')
+  .post(auth('manageSyncProducts'), productController.syncProductsWithIQController);
 module.exports = router;
