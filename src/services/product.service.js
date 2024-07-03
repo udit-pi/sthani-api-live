@@ -521,8 +521,8 @@ const syncProductsWithIQ = async () => {
       return {
           success: true,
           details: 'Products synced with IQ Fulfillment',
-          created: createdList.map(sku => sku.sku),
-          updated: updatedList.map(sku => sku.sku)
+          created: createdList.map(sku => sku.description),
+          updated: updatedList.map(sku => sku.description)
       };
   } catch (error) {
       console.error('Error syncing with IQ Fulfillment:', error);
