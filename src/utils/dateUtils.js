@@ -8,8 +8,8 @@ const DATE_FORMAT = 'DD/MM/YYYY hh:mm A'; // Standard SQL datetime format, you c
  * @param {string | Date} date - The date to format. Can be a Date object or a string.
  * @returns {string} The formatted date string.
  */
-const formatDateUAE = (date) => {
-  return moment(date).tz(TIMEZONE).format(DATE_FORMAT);
+const formatDateUAE = (date, format = DATE_FORMAT) => {
+  return moment(date).tz(TIMEZONE).format(format);
 };
 
 // Helper function to check if a date is valid
