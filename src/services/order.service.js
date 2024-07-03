@@ -1,6 +1,7 @@
 const { Order, Product, Discount, Customer, ShippingRate } = require('../models');
 const ApiError = require('../utils/ApiError');
 const axios = require('axios');
+const moment = require('moment');
 const httpStatus = require('http-status');
 const MEDIA_URL = process.env.MEDIA_URL;
 const mapOrderStatus = require('../utils/mapOrderStatus');
@@ -302,12 +303,18 @@ function prepOrder(orderData) {
     if (item.image && !item.image.startsWith(MEDIA_URL)) {
       item.image = `${MEDIA_URL}${item.image}`;
     }
+    if (item.price) {
+      item.price = parseFloat(item.price).toFixed(2);
+    }
+    if (item.total) {
+      item.total = parseFloat(item.total).toFixed(2);
+    }
   });
 
   // Flatten and adjust discount and shipping details
   if (orderData.discount) {
     orderData.discountCode = orderData.discount.code;
-    orderData.discountAmount = orderData.discount.amount;
+    orderData.discountAmount = parseFloat(orderData.discount.amount).toFixed(2);
     delete orderData.discount; // Remove the old discount structure
   }
 
@@ -316,9 +323,26 @@ function prepOrder(orderData) {
     delete orderData.shipping; // Remove the old shipping key
   }
 
+  if (orderData.subtotal) {
+    orderData.subtotal = parseFloat(orderData.subtotal).toFixed(2);
+  }
+
+  if (orderData.total) {
+    orderData.total = parseFloat(orderData.total).toFixed(2);
+  }
+
+   // Sort and format status logs
+   if (orderData.statusLogs && orderData.statusLogs.length > 0) {
+    orderData.statusLogs.sort((a, b) => moment(b.timestamp).diff(moment(a.timestamp))); // Sort descending by date
+    orderData.statusLogs = orderData.statusLogs.map(log => ({
+      ...log,
+      timestamp: formatDateUAE(log.timestamp, 'h:mma, Do MMMM YYYY') // Format each timestamp
+    }));
+  }
+
   // Include formatted date if applicable
   if (orderData.createdAt && formatDateUAE) {
-    orderData.createdAt_formatted = formatDateUAE(orderData.createdAt);
+    orderData.createdAt_formatted = formatDateUAE(orderData.createdAt, 'h:mma, Do MMMM YYYY');
   }
 
   // Map status if function is available
@@ -394,7 +418,7 @@ const createIQOrder = async (orderId) => {
     await order.save();
 
     return {
-      message: "Order sent to IQ Fulfillment successfully!",
+      message: "Order sent to Fulfillment Center",
       iqFulfillmentResponse: iqResponse.data
     };
   } catch (error) {
