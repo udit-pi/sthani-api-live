@@ -6,6 +6,7 @@ const httpStatus = require('http-status');
 const MEDIA_URL = process.env.MEDIA_URL;
 const mapOrderStatus = require('../utils/mapOrderStatus');
 const { formatDateUAE } = require('../utils/dateUtils')
+const { roundTo } = require('../utils/roundTo')
 const { sendOrderCreatedEmail, sendOrderStatusUpdatedEmail, sendPaymentStatusUpdatedEmail } = require('../utils/emailService');
 const OrderSequence = require('../models/OrderSequence.model');
 
@@ -304,17 +305,17 @@ function prepOrder(orderData) {
       item.image = `${MEDIA_URL}${item.image}`;
     }
     if (item.price) {
-      item.price = parseFloat(item.price).toFixed(2);
+      item.price = roundTo(item.price);
     }
     if (item.total) {
-      item.total = parseFloat(item.total).toFixed(2);
+      item.total = roundTo(item.total);
     }
   });
 
   // Flatten and adjust discount and shipping details
   if (orderData.discount) {
     orderData.discountCode = orderData.discount.code;
-    orderData.discountAmount = parseFloat(orderData.discount.amount).toFixed(2);
+    orderData.discountAmount = roundTo(orderData.discount.amount);
     delete orderData.discount; // Remove the old discount structure
   }
 
@@ -324,11 +325,11 @@ function prepOrder(orderData) {
   }
 
   if (orderData.subtotal) {
-    orderData.subtotal = parseFloat(orderData.subtotal).toFixed(2);
+    orderData.subtotal = roundTo(orderData.subtotal);
   }
 
   if (orderData.total) {
-    orderData.total = parseFloat(orderData.total).toFixed(2);
+    orderData.total = roundTo(orderData.total);
   }
 
    // Sort and format status logs
