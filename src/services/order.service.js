@@ -145,6 +145,7 @@ const createOrder = async (customer, orderData) => {
   const order = new Order({
     customer: {
       customerId: customerDetails._id,
+      pgCustomerId: customerDetails.pgCustomerId || "",
       name: `${customerDetails.first_name} ${customerDetails.last_name}`,
       email: customerDetails.email,
       mobile: customerDetails.mobile,
@@ -162,7 +163,7 @@ const createOrder = async (customer, orderData) => {
   });
 
   try {
-     
+
 
     // Ensure order_no is set before saving
     if (!order.order_no) {
@@ -177,8 +178,8 @@ const createOrder = async (customer, orderData) => {
       order.order_no = orderNo.toString();
     }
 
-    
-    
+
+
     await order.save();
 
     // Decrement stock after order is successfully saved
@@ -220,7 +221,7 @@ const createOrder = async (customer, orderData) => {
 
 
 
-const updatePaymentStatus = async (orderId, status, transactionId, errorMessage) => {
+const updatePaymentStatus = async (orderId, status, transactionId, paymentDetails, errorMessage) => {
   const order = await Order.findById(orderId);
   if (!order) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
@@ -232,10 +233,27 @@ const updatePaymentStatus = async (orderId, status, transactionId, errorMessage)
 
   // Update the order with a new status log entry
   order.statusLogs.push({
-    status: `New Payment Status: ${status}` ,
+    status: `New Payment Status: ${status}`,
     description: errorMessage && `Error ${errorMessage}` + transactionId && `TransactionId: ${transactionId}`
   });
-  
+
+  // Check and update pgCustomerId if necessary
+
+  if (paymentDetails && paymentDetails.customer_id) {
+    order.customer.pgCustomerId = paymentDetails.customer_id;
+
+    // Also update the central Customer model
+    const customer = await Customer.findById(order.customer.customerId);
+    console.log("Pg Customer Id is", paymentDetails.customer_id);
+    if (!customer.pgCustomerId) {
+      console.log("payment details", paymentDetails);
+      customer.pgCustomerId = paymentDetails.customer_id;
+      await customer.save();  // Save updates to the Customer document
+    }
+
+    console.log("customer details", customer);
+
+  }
 
   await order.save();
   await sendPaymentStatusUpdatedEmail(order);
@@ -299,7 +317,7 @@ function prepOrder(orderData) {
     orderData.Order_id = orderData.id.toString(); // Ensure the ID is a string if needed
     delete orderData.id; // Remove the original _id field
   }
-  
+
   orderData.items.forEach(item => {
     if (item.image && !item.image.startsWith(MEDIA_URL)) {
       item.image = `${MEDIA_URL}${item.image}`;
@@ -332,8 +350,8 @@ function prepOrder(orderData) {
     orderData.total = roundTo(orderData.total);
   }
 
-   // Sort and format status logs
-   if (orderData.statusLogs && orderData.statusLogs.length > 0) {
+  // Sort and format status logs
+  if (orderData.statusLogs && orderData.statusLogs.length > 0) {
     orderData.statusLogs.sort((a, b) => moment(b.timestamp).diff(moment(a.timestamp))); // Sort descending by date
     orderData.statusLogs = orderData.statusLogs.map(log => ({
       ...log,
@@ -351,12 +369,16 @@ function prepOrder(orderData) {
     orderData.orderStatus = mapOrderStatus(orderData.orderStatus);
   }
 
+  // Add pgCustomerId to the customer object
+  if (orderData.customer && orderData.customer.pgCustomerId) {
+    orderData.customer.pgCustomerId = orderData.customer.pgCustomerId; // Ensure it's included even if null
+  }
   return orderData;
 }
 
 
 const createIQOrder = async (orderId) => {
-  const order = await Order.findById(orderId).populate('items.productId'); 
+  const order = await Order.findById(orderId).populate('items.productId');
   if (!order) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
   }
@@ -367,9 +389,9 @@ const createIQOrder = async (orderId) => {
     order_type: "XDOCK",
     total_price: order.total,
     currency: order.currency,
-    payment_type: "PREPAID", 
+    payment_type: "PREPAID",
     note: `${order.order_no}`,
-    
+
     consignee: {
       name: order.customer.name,
       surname: order.customer.name,
@@ -378,12 +400,12 @@ const createIQOrder = async (orderId) => {
       company: order.customer.name
     },
     skus: order.items.map(item => ({
-      code: item.sku, 
+      code: item.sku,
       quantity: item.quantity,
-      description: item.name, 
+      description: item.name,
       price: item.price,
-      supplierId: null, 
-      supplierAddress: null 
+      supplierId: null,
+      supplierAddress: null
     })),
     shipping_address: {
       country: "UAE",

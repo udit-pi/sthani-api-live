@@ -107,6 +107,10 @@ const orderSchema = mongoose.Schema(
         type: String,
         required: false,
       },
+      pgCustomerId: {
+        type: String,
+        required: false,
+      },
     },
     address: {
       name: String,
