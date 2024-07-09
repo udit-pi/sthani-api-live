@@ -42,8 +42,8 @@ const createOrder = catchAsync(async (req, res) => {
 });
 
 const updatePaymentStatus = catchAsync(async (req, res) => {
-  const { orderId, status, transactionId, errorMessage } = req.body;
-  const order = await orderService.updatePaymentStatus(orderId, status, transactionId, errorMessage);
+  const { orderId, status, transactionId, paymentDetails, errorMessage } = req.body;
+  const order = await orderService.updatePaymentStatus(orderId, status, transactionId, paymentDetails, errorMessage);
   if (order) {
     return res.status(201).json({ status: 201, message: 'Payment updated successfully!', order: order });
   } else {

@@ -72,6 +72,12 @@ const customerSchema = mongoose.Schema(
       required: false
     },
 
+    pgCustomerId: {
+      type: String,
+      trim: true,
+      required: false
+    },
+
   },
   {
     timestamps: true,
