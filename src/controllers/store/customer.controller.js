@@ -151,6 +151,7 @@ const getDetails = catchAsync(async (req, res) => {
     if (!customer) {
       return res.status(404).json({ status: 404, message: 'Customer not found' });
     }
+    console.log("Customer Detials", customer);
     const defaultAddress = customer.addresses.find(address => address.default);
     let address;
 
@@ -177,7 +178,8 @@ const getDetails = catchAsync(async (req, res) => {
       email: customer.email,
       dob: customer.dob,
       gender: customer.gender,
-      profilePicture: customer.profilePicture && `${MEDIA_URL}${customer.profilePicture}`
+      profilePicture: customer.profilePicture && `${MEDIA_URL}${customer.profilePicture}`,
+      pgCustomerId: customer.pgCustomerId || ""
       //default_address: default_Address
     };
 
