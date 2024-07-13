@@ -88,6 +88,11 @@ const productSchema = mongoose.Schema(
       type: Boolean,
       default: 0
   },
+  productTags: {
+    type: [String],  // Array of strings to store multiple tags
+    required: false,
+    default: []
+  },
   published: {
     type: Boolean,
     default: 0
@@ -106,7 +111,7 @@ const productSchema = mongoose.Schema(
     ],
     
     product_variants: {
-      type: [
+      type: [ 
         {
           _id: mongoose.Schema.Types.ObjectId,
           name: {

@@ -42,6 +42,7 @@ const createProduct = {
       // price_includes_tax: Joi.boolean(),
       cost: Joi.number().allow(""),
       published: Joi.string().allow(""),
+      productTags: Joi.array().items(Joi.string()).optional().allow(null),  
       // sales_count: Joi.number().default(0),
       category: Joi.array()
         .items(
@@ -107,7 +108,7 @@ const createProduct = {
         .optional()
         .allow(null),
     })
-    
+
     .options({ allowUnknown: true }),
 };
 
@@ -223,6 +224,7 @@ const updateProduct = {
       //     value: Joi.string(),
       //   })
       // ),
+      productTags: Joi.array().items(Joi.string()).optional().allow(null),
       weight: Joi.number().allow(""),
       height: Joi.number().allow(""),
       length: Joi.number().allow(""),
