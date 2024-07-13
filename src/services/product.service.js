@@ -180,6 +180,7 @@ const saveProduct = async (productBody, req, productId = null) => {
       'published',
       'is_upsell',
       'categories',
+      'productTags',
       'options'
     ];
     fields.forEach(field => {
@@ -516,7 +517,7 @@ const syncProductsWithIQ = async () => {
                   await Product.updateOne(updateCondition, updateAction);
               }));
           }
-      }
+      } 
 
       return {
           success: true,
