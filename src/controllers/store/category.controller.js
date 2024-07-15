@@ -106,6 +106,7 @@ const getFiltercategory = catchAsync(async (req, res) => {
                         original_amount: product.price,
                         discount_percentage: product.discounted_price ? Math.round(((product.price - product.discounted_price) / product.price) * 100) : 0
                     },
+                    tags: product.productTags || [],
                     variants: productVariants,
 
                 }; // return
