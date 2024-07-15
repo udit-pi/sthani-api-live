@@ -89,6 +89,7 @@ if (brand.images && brand.images.length > 0) {
                     logo: `${MEDIA_URL}${product.brand_id.logo}`
 
                 },
+                tags: product.productTags || [],
                 variants: productVariants,
             };
               
