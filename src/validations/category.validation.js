@@ -11,6 +11,8 @@ const createCategory = {
 
     description: Joi.string().optional(),
     slide_show: Joi.array().items(Joi.string()).optional(), 
+    tag: Joi.string().optional(),
+    sort_order: Joi.number().optional(),
     // meta_description: Joi.string().required(),
 
   }),
