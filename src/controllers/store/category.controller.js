@@ -137,6 +137,26 @@ const getCategoryList = catchAsync(async (req, res) => {
             .sort({ sort_order: 1 });
 
         if (categories.length > 0) {
+
+            // Collect category IDs to use in the product query
+            const categoryIds = categories.map(category => category._id);
+
+            // Fetch products that have these categories
+            const products = await Product.find({ categories: { $in: categoryIds } }).select('productTags');
+
+            // Collect all tags from these products
+            let allTags = [];
+            products.forEach(product => {
+                if (product.productTags && product.productTags.length > 0) {
+                    allTags = allTags.concat(product.productTags);
+                }
+            });
+
+            // Get unique tags and select 5-6 random tags
+            allTags = [...new Set(allTags)];
+            const randomTags = allTags.sort(() => 0.5 - Math.random()).slice(0, 8);
+
+
             const response = {
                 status: 200,
                 message: 'Success',
@@ -145,7 +165,8 @@ const getCategoryList = catchAsync(async (req, res) => {
                     name: category.name,
                     banner: category.banner && `${MEDIA_URL}${category.banner}`,
                     tag: category.tag, 
-                }))
+                })),
+                tags: randomTags,
             };
             res.status(200).json(response);
         } else {
