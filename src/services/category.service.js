@@ -39,7 +39,9 @@ const createCategory = async (req) => {
     meta_title: req.body.meta_title,
     meta_description: req.body.meta_description,
     slug: slug,
-    is_featured: req.body.is_featured
+    is_featured: req.body.is_featured,
+    tag: req.body.tag,
+    sort_order: req.body.sort_order,
 
   })
   const newCategory = category.save()

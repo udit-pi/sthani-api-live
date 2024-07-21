@@ -131,7 +131,10 @@ const getCategoryList = catchAsync(async (req, res) => {
     
 
     try {
-        const categories = await Category.find({ is_featured: true }).select('_id name icon banner');
+        
+        const categories = await Category.find({ is_featured: true })
+            .select('_id name icon banner tag')
+            .sort({ sort_order: 1 });
 
         if (categories.length > 0) {
             const response = {
@@ -141,6 +144,7 @@ const getCategoryList = catchAsync(async (req, res) => {
                     Category_Id: category._id,
                     name: category.name,
                     banner: category.banner && `${MEDIA_URL}${category.banner}`,
+                    tag: category.tag, 
                 }))
             };
             res.status(200).json(response);

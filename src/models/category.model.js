@@ -44,7 +44,7 @@ const categorySchema = mongoose.Schema(
     parent_category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',
-      default: null 
+      default: null
     },
 
     banner: {
@@ -76,7 +76,17 @@ const categorySchema = mongoose.Schema(
     products: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Product'
-    }]
+    }],
+    tag: {
+      type: String,
+      required: false,
+      trim: true,
+    },
+    sort_order: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
 
   },
   {
