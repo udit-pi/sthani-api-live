@@ -80,6 +80,27 @@ const getFilterBrands = catchAsync(async (req, res) => {
   const uniqueTags = [...new Set(allTags)];
   const randomTags = getRandomTags(uniqueTags, 10);
 
+  // Create a map of categories to products
+  const categoryMap = {};
+  products.forEach(product => {
+    product.categories.forEach(category => {
+      if (!categoryMap[category.slug]) {
+        categoryMap[category.slug] = {
+          category: {
+            id: category._id,
+            name: category.name,
+            slug: category.slug,
+          },
+          products: [],
+        };
+      }
+      categoryMap[category.slug].products.push(formatProduct(product));
+    });
+  });
+
+  // Convert categoryMap to array of categories with products
+  const categorizedProducts = Object.values(categoryMap);
+
   const productSlideshow = brand.slide_show.map(image => MEDIA_URL + image);
 
   let brand_images;
@@ -100,10 +121,9 @@ const getFilterBrands = catchAsync(async (req, res) => {
       description: brand.description,
       brand_logo: `${MEDIA_URL}${brand.logo}`,
       brand_color: brand.color,
-      brand_tags: randomTags,
-      products: products.map(formatProduct),
+      products_by_category: categoryMap,
       trending_products: trendingProducts,
-      
+      tags: randomTags,
     },
     meta: {
       current_page: pageNumber,
