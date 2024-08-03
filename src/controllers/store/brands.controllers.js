@@ -121,9 +121,10 @@ const getFilterBrands = catchAsync(async (req, res) => {
       description: brand.description,
       brand_logo: `${MEDIA_URL}${brand.logo}`,
       brand_color: brand.color,
+      brand_tags: randomTags,
       products_by_category: categoryMap,
       trending_products: trendingProducts,
-      tags: randomTags,
+      
     },
     meta: {
       current_page: pageNumber,
