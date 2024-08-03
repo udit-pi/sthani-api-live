@@ -41,29 +41,8 @@ const updateHome = {
     title: Joi.string().required(),
     subtitle: Joi.string().allow(''),
     widget_type: Joi.string().required(),
-    items: Joi.array().items(
-            Joi.object({
-               image:  Joi.string().allow(''),
-               description: Joi.string().required(),
-               tag: Joi.string().allow(''),
-               brand: Joi.string().allow(''),
-               destination: Joi.string().allow(''),
-               id: Joi.string().custom(objectId),
-              //  slideShowBrand: Joi.string().custom(objectId).allow(''),
-              //  category: Joi.string().custom(objectId).allow(''),
-              //  product: Joi.string().custom(objectId).allow(''),
-               products: Joi.array().items(
-                Joi.object({
-                  label: Joi.string(),
-                  value: Joi.string(),
-                  _id: Joi.string().allow('')
-                })
-              ).allow(''),
-            })
-            .optional(),
-              
-        ),
-        is_active: Joi.boolean().optional(),
+    items: Joi.array().min(1).items(Joi.object().unknown(true)).required(), // Ensure at least one item in the array
+    is_active: Joi.boolean().optional(),
   }),
   allowUnknown: true
 };
