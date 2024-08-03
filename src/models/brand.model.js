@@ -66,6 +66,12 @@ const brandSchema = mongoose.Schema(
       type: Number,
       default: 0
     },
+    trending_products: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product',
+      },
+    ],
   },
   {
     timestamps: true,

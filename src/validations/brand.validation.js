@@ -59,7 +59,8 @@ const updateBrand = {
     //     })
     // ),
     website: Joi.string().allow(''),
-    color: Joi.string().regex(/^#([0-9A-F]{3}){1,2}$/i).optional()
+    color: Joi.string().regex(/^#([0-9A-F]{3}){1,2}$/i).optional(),
+    trending_products: Joi.array().items(Joi.string().custom(objectId)).optional(),
     })
     .min(1),
 };

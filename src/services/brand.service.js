@@ -236,6 +236,7 @@ if(!brand.slide_show){
   brand.website =  req.body.website
   brand.color = req.body.color
   brand.slug = slug
+  brand.trending_products = req.body.trending_products || []; 
   await brand.save()
 
   return brand;
