@@ -1,13 +1,14 @@
 const mongoose = require('mongoose');
 require('dotenv').config();
 const axios = require('axios');
-
+const csv = require('csv-parser');
 const httpStatus = require("http-status");
 const { Product, Brand, Category, ProductMedia } = require("../models");
 const ApiError = require("../utils/ApiError");
 const path = require("path");
 // const fs = require("fs");
-const fs = require('fs').promises;
+const fspromise = require('fs').promises;
+const fs = require('fs');
 const generateSlug = require("./generateSlug");
 const {
   uploadSingleFile,
@@ -15,6 +16,8 @@ const {
   uploadMultipleFile,
 } = require("./fileUpload.service");
 const { createProductMedia } = require("./product_media.service");
+
+const { rename } = require('fs/promises'); // Correct import
 
 const uploadFolder = process.env.UPLOAD_FOLDER || "/var/www/html/media";
 
@@ -73,7 +76,7 @@ async function handleFiles(files) {
         console.log(file.size);
         const fileName = Date.now() + file.originalFilename;
         const file_path = path.join(uploadFolder, fileName);
-        fs.renameSync(file.filepath, file_path); // Move file to desired location
+        fspromise.renameSync(file.filepath, file_path); // Move file to desired location
 
         const fileSize = file.size;
         const fileExtension = fileName.split(".").pop().toLowerCase();
@@ -107,7 +110,7 @@ async function handleFiles(files) {
     console.log("File:", files.originalFilename);
     const fileName = Date.now() + files.originalFilename;
     const file_path = path.join(uploadFolder, fileName);
-    fs.renameSync(files.filepath, file_path); // Move file to desired location
+    fspromise.renameSync(files.filepath, file_path); // Move file to desired location
 
     const fileSize = files.size;
     const fileExtension = fileName.split(".").pop().toLowerCase();
@@ -407,7 +410,7 @@ const updateProductById = async (productId, productBody, req) => {
 const deleteProductFiles = (mediaFiles) => {
   mediaFiles.forEach(fileName => {
     const filePath = path.join(uploadFolder, fileName);
-    fs.unlink(filePath, (err) => {
+    fspromise.unlink(filePath, (err) => {
       if (err) {
         console.error(`Failed to delete file: ${filePath}`, err);
       } else {
@@ -445,46 +448,46 @@ const syncProductsWithIQ = async () => {
 
   // Map product and variant to SKU structure and prepare payloads
   const mapProductToSKU = (product, variant = null) => ({
-      sku: variant ? variant._id || product._id : product._id,
-      alternative_sku_name: variant ? variant.sku || product.sku : product.sku,
-      sku_type: "Regular",
-      description: variant ? `${product.name} - ${variant.name}` : product.name,
-      weight: variant ? variant.weight || product.weight : product.weight,
-      cube: variant ? (variant.length * variant.width * variant.height) : (product.length * product.width * product.height),
-      length: variant ? variant.length || product.length : product.length,
-      width: variant ? variant.width || product.width : product.width,
-      height: variant ? variant.height || product.height : product.height,
-      origin_country: "UAE",
-      productId: product._id,
-      variantId: variant ? variant._id : null
+    sku: variant ? variant._id || product._id : product._id,
+    alternative_sku_name: variant ? variant.sku || product.sku : product.sku,
+    sku_type: "Regular",
+    description: variant ? `${product.name} - ${variant.name}` : product.name,
+    weight: variant ? variant.weight || product.weight : product.weight,
+    cube: variant ? (variant.length * variant.width * variant.height) : (product.length * product.width * product.height),
+    length: variant ? variant.length || product.length : product.length,
+    width: variant ? variant.width || product.width : product.width,
+    height: variant ? variant.height || product.height : product.height,
+    origin_country: "UAE",
+    productId: product._id,
+    variantId: variant ? variant._id : null
   });
 
   const createPayload = {
-      skus: allProducts.reduce((acc, product) => {
-          (product.product_variants && product.product_variants.length > 0 ? product.product_variants : [null]).forEach(variant => {
-              if (variant ? !variant.isSyncedWithIQ : !product.isSyncedWithIQ) {
-                  acc.push(mapProductToSKU(product, variant));
-              }
-          });
-          return acc;
-      }, [])
+    skus: allProducts.reduce((acc, product) => {
+      (product.product_variants && product.product_variants.length > 0 ? product.product_variants : [null]).forEach(variant => {
+        if (variant ? !variant.isSyncedWithIQ : !product.isSyncedWithIQ) {
+          acc.push(mapProductToSKU(product, variant));
+        }
+      });
+      return acc;
+    }, [])
   };
 
   const updatePayload = {
-      skus: allProducts.reduce((acc, product) => {
-          (product.product_variants && product.product_variants.length > 0 ? product.product_variants : [null]).forEach(variant => {
-              if (variant ? variant.isSyncedWithIQ : product.isSyncedWithIQ) {
-                  acc.push(mapProductToSKU(product, variant));
-              }
-          });
-          return acc;
-      }, [])
+    skus: allProducts.reduce((acc, product) => {
+      (product.product_variants && product.product_variants.length > 0 ? product.product_variants : [null]).forEach(variant => {
+        if (variant ? variant.isSyncedWithIQ : product.isSyncedWithIQ) {
+          acc.push(mapProductToSKU(product, variant));
+        }
+      });
+      return acc;
+    }, [])
   };
 
   const headers = {
-      "Content-Type": "application/json",
-      "Accept": "application/json",
-      "Authorization": `Bearer ${process.env.IQ_FULFILLMENT_TOKEN}`,
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Authorization": `Bearer ${process.env.IQ_FULFILLMENT_TOKEN}`,
   };
 
   console.log("Products to create", createPayload.length)
@@ -492,48 +495,299 @@ const syncProductsWithIQ = async () => {
 
   // Perform API requests and update database
   try {
-      let createdList = [], updatedList = [];
-      if (createPayload.skus.length > 0) {
-          const createResponse = await axios.post(process.env.IQ_FULFILLMENT_BULK_SKU_CREATE_URL, createPayload, { headers });
-          if (createResponse.data.success) {
-              createdList = createPayload.skus;
-              // Update sync status for created items
-              await Promise.all(createdList.map(async sku => {
-                  const updateCondition = sku.variantId ? { _id: sku.productId, "product_variants._id": sku.variantId } : { _id: sku.productId };
-                  const updateAction = sku.variantId ? { "$set": { "product_variants.$.isSyncedWithIQ": true, "product_variants.$.lastSyncWithIQ": new Date() }} : { "$set": { isSyncedWithIQ: true, lastSyncWithIQ: new Date() }};
-                  await Product.updateOne(updateCondition, updateAction);
-              }));
-          }
+    let createdList = [], updatedList = [];
+    if (createPayload.skus.length > 0) {
+      const createResponse = await axios.post(process.env.IQ_FULFILLMENT_BULK_SKU_CREATE_URL, createPayload, { headers });
+      if (createResponse.data.success) {
+        createdList = createPayload.skus;
+        // Update sync status for created items
+        await Promise.all(createdList.map(async sku => {
+          const updateCondition = sku.variantId ? { _id: sku.productId, "product_variants._id": sku.variantId } : { _id: sku.productId };
+          const updateAction = sku.variantId ? { "$set": { "product_variants.$.isSyncedWithIQ": true, "product_variants.$.lastSyncWithIQ": new Date() } } : { "$set": { isSyncedWithIQ: true, lastSyncWithIQ: new Date() } };
+          await Product.updateOne(updateCondition, updateAction);
+        }));
+      }
+    }
+
+    if (updatePayload.skus.length > 0) {
+      const updateResponse = await axios.post(process.env.IQ_FULFILLMENT_BULK_SKU_UPDATE_URL, updatePayload, { headers });
+      if (updateResponse.data.success) {
+        updatedList = updatePayload.skus;
+        // Update sync status for updated items
+        await Promise.all(updatedList.map(async sku => {
+          const updateCondition = sku.variantId ? { _id: sku.productId, "product_variants._id": sku.variantId } : { _id: sku.productId };
+          const updateAction = sku.variantId ? { "$set": { "product_variants.$.isSyncedWithIQ": true, "product_variants.$.lastSyncWithIQ": new Date() } } : { "$set": { isSyncedWithIQ: true, lastSyncWithIQ: new Date() } };
+          await Product.updateOne(updateCondition, updateAction);
+        }));
+      }
+    }
+
+    return {
+      success: true,
+      details: 'Products synced with IQ Fulfillment',
+      created: createdList.map(sku => sku.description),
+      updated: updatedList.map(sku => sku.description)
+    };
+  } catch (error) {
+    console.error('Error syncing with IQ Fulfillment:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+const importProducts = async (productsData) => {
+  console.log("Starting import process");
+  console.log("Imported data:", productsData);
+
+  try {
+    const productMap = new Map();
+
+    for (const data of productsData) {
+      console.log("Processing row:", data);
+
+      // Skip empty rows in CSV
+      if (!data['Slug']) {
+        console.log("Skipping empty row");
+        continue;
       }
 
-      if (updatePayload.skus.length > 0) {
-          const updateResponse = await axios.post(process.env.IQ_FULFILLMENT_BULK_SKU_UPDATE_URL, updatePayload, { headers });
-          if (updateResponse.data.success) {
-              updatedList = updatePayload.skus;
-              // Update sync status for updated items
-              await Promise.all(updatedList.map(async sku => {
-                  const updateCondition = sku.variantId ? { _id: sku.productId, "product_variants._id": sku.variantId } : { _id: sku.productId };
-                  const updateAction = sku.variantId ? { "$set": { "product_variants.$.isSyncedWithIQ": true, "product_variants.$.lastSyncWithIQ": new Date() }} : { "$set": { isSyncedWithIQ: true, lastSyncWithIQ: new Date() }};
-                  await Product.updateOne(updateCondition, updateAction);
-              }));
-          }
-      } 
+      if (!productMap.has(data['Slug'])) {
+        const productBody = {
+          name: data['Name'] || '',
+          sku: data['SKU'] || '',
+          description_short: data['Short Description'] || '',
+          description: data['Description'] || '',
+          weight: data['Weight'] || '',
+          length: data['Length'] || '',
+          width: data['Width'] || '',
+          height: data['Height'] || '',
+          quantity_min: data['Minimum Quantity'] || '',
+          stock: data['Stock'] || '',
+          price: data['Price'] || '',
+          discounted_price: data['Discounted Price'] || '',
+          cost: data['Cost'] || '',
+          media: [],
+          published: data['Published'] === 'TRUE',
+          is_upsell: data['Upselling'] === 'FALSE',
+          categories: [],
+          product_variants: [],
+          additional_descriptions: []
+        };
 
-      return {
-          success: true,
-          details: 'Products synced with IQ Fulfillment',
-          created: createdList.map(sku => sku.description),
-          updated: updatedList.map(sku => sku.description)
-      };
+        // Add categories
+        const categorySlugs = data['Categories'].split(', ');
+        for (const slug of categorySlugs) {
+          const category = await Category.findOne({ slug });
+          if (category) {
+            productBody.categories.push(category._id);
+          }
+        }
+
+        productMap.set(data['Slug'], productBody);
+      }
+
+      const productBody = productMap.get(data['Slug']);
+
+      // Add media if present
+      if (data['Media']) {
+        productBody.media.push(data['Media'].replace('mediaFolder/', ''));
+      }
+
+      // Add variants if present
+      if (data['Variant Name']) {
+        const variant = {
+          name: data['Variant Name'],
+          sku: data['Variant SKU'],
+          price: data['Variant Price'],
+          discounted_price: data['Variant Discounted Price'],
+          stock: data['Variant Stock'],
+          image: data['Variant Image'] ? data['Variant Image'].replace('mediaFolder/', '') : '',
+        };
+        productBody.product_variants.push(variant);
+      }
+
+      // Add additional descriptions if present
+      if (data['Additional Description Label']) {
+        const additionalDescription = {
+          label: data['Additional Description Label'],
+          value: data['Additional Description Value'],
+        };
+        productBody.additional_descriptions.push(additionalDescription);
+      }
+    }
+
+    // Validate and check uniqueness without saving
+    for (const [slug, productBody] of productMap.entries()) {
+      try {
+        const product = new Product(productBody);
+
+        // Validate the product
+        await product.validate();
+
+        // Check for uniqueness of slug and name
+        const existingProductWithSameSlug = await Product.findOne({ slug: product.slug });
+        const existingProductWithSameName = await Product.findOne({ name: product.name });
+
+        if (existingProductWithSameSlug) {
+          console.error(`Product slug "${product.slug}" already exists in the database.`);
+          continue;
+        }
+
+        if (existingProductWithSameName) {
+          console.error(`Product name "${product.name}" already exists in the database.`);
+          continue;
+        }
+
+        console.log(`Product ${slug} is valid and unique.`);
+      } catch (validationError) {
+        console.error(`Product ${slug} is invalid:`, validationError.message);
+      }
+    }
+
+    console.log("Import validation process completed successfully");
+    return true;
   } catch (error) {
-      console.error('Error syncing with IQ Fulfillment:', error);
-      return { success: false, error: error.message };
+    console.error('Error during product import (validation dry run):', error);
+    throw error;
   }
 };
 
 
+const validateAndImportProducts = async (file, shouldImport) => {
+  const results = [];
+  const productMap = new Map();
 
+  const fileName = Date.now() + '-' + file.originalFilename;
+  const filePath = path.join(uploadFolder, fileName);
 
+  console.log('File object:', file);
+  const tempFilePath = file.filepath;
+  console.log('Temporary File Path:', tempFilePath);
+
+  try {
+    await fspromise.rename(tempFilePath, filePath);
+  } catch (error) {
+    console.error('Error moving file:', error);
+    throw error;
+  }
+
+  console.log("File Path ---- ", filePath);
+
+  return new Promise((resolve, reject) => {
+    fs.createReadStream(filePath)
+      .pipe(csv())
+      .on('data', (data) => {
+        try {
+          const cleanedData = {};
+          for (const key in data) {
+            const cleanedKey = key.replace(/^\uFEFF/, ''); // Remove any BOM character from the key
+            cleanedData[cleanedKey] = data[key];
+          }
+
+          console.log("Processing row:", cleanedData);
+
+          if (!cleanedData['Slug']) {
+            console.log("Skipping empty row");
+            return;
+          }
+
+          if (!productMap.has(cleanedData['Slug'])) {
+            const productBody = {
+              name: cleanedData['Name'] || '',
+              sku: cleanedData['SKU'] || '',
+              description_short: cleanedData['Short Description'] || '',
+              description: cleanedData['Description'] || '',
+              weight: cleanedData['Weight'] || '',
+              length: cleanedData['Length'] || '',
+              width: cleanedData['Width'] || '',
+              height: cleanedData['Height'] || '',
+              quantity_min: cleanedData['Minimum Quantity'] || '',
+              stock: cleanedData['Stock'] || '',
+              price: cleanedData['Price'] || '',
+              discounted_price: cleanedData['Discounted Price'] || '',
+              cost: cleanedData['Cost'] || '',
+              media: [],
+              published: cleanedData['Published'] === 'TRUE',
+              is_upsell: cleanedData['Upselling'] === 'FALSE',
+              categories: cleanedData['Categories'] ? cleanedData['Categories'].split(', ') : [],
+              product_variants: [],
+              additional_descriptions: []
+            };
+
+            productMap.set(cleanedData['Slug'], productBody);
+          }
+
+          const productBody = productMap.get(cleanedData['Slug']);
+
+          if (cleanedData['Media']) {
+            productBody.media.push(cleanedData['Media'].replace('mediaFolder/', ''));
+          }
+
+          if (cleanedData['Variant Name']) {
+            const variant = {
+              name: cleanedData['Variant Name'],
+              sku: cleanedData['Variant SKU'],
+              price: cleanedData['Variant Price'],
+              discounted_price: cleanedData['Variant Discounted Price'],
+              stock: cleanedData['Variant Stock'],
+              image: cleanedData['Variant Image'] ? cleanedData['Variant Image'].replace('mediaFolder/', '') : '',
+            };
+            productBody.product_variants.push(variant);
+          }
+
+          if (cleanedData['Additional Description Label']) {
+            const additionalDescription = {
+              label: cleanedData['Additional Description Label'],
+              value: cleanedData['Additional Description Value'],
+            };
+            productBody.additional_descriptions.push(additionalDescription);
+          }
+        } catch (error) {
+          console.error('Error processing data:', error);
+          results.push({ isValid: false,  message: `Error processing data: ${error.message}`, data });
+        }
+      })
+      .on('end', async () => {
+        console.log("Finished reading CSV. Starting validation...");
+        let validationPassed = true;
+
+        for (const [slug, productBody] of productMap.entries()) {
+          try {
+            const categoryIds = [];
+            for (const categorySlug of productBody.categories) {
+              const category = await Category.findOne({ slug: categorySlug });
+              if (category) {
+                categoryIds.push(category._id);
+              }
+            }
+            productBody.categories = categoryIds;
+
+            const product = new Product(productBody);
+            await product.validate();
+            console.log(`Product ${slug} is valid.`);
+            
+
+            if (shouldImport) {
+              await product.save(); 
+            }
+
+            results.push({ isValid: true,  message: `Product "${slug}" is valid.`, data: productBody });
+
+          } catch (validationError) {
+            validationPassed = false;
+            console.error(`Product ${slug} is invalid:`, validationError.message);
+            results.push({ isValid: false,  message: `Product "${slug}" is invalid: ${validationError.message}`, data: productBody });
+            
+          }
+        }
+
+        resolve(results);
+      })
+      .on('error', (error) => {
+        console.error('Error reading CSV file:', error);
+        reject(error);
+      });
+  });
+};
 
 
 module.exports = {
@@ -543,5 +797,7 @@ module.exports = {
   getProductById,
   updateProductById,
   deleteProductById,
-  syncProductsWithIQ
+  syncProductsWithIQ,
+  
+  validateAndImportProducts
 };

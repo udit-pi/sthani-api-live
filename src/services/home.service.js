@@ -16,7 +16,7 @@ const saveHome = async (req) => {
     home.placement_id = req.body.placement_id;
     home.items = req.body.items;
     home.widget_type = req.body.widget_type;
-
+    home.is_active = req.body.is_active;
   
       const item_count = req.body.items.length;
       if (item_count > 0) {
@@ -76,6 +76,7 @@ const updateWidgetById =  async (widgetId, req) => {
   
       home.widget_type = req.body.widget_type;
       home.items = [...req.body.items];
+      home.is_active = req.body.is_active;
    
    
 
@@ -143,6 +144,8 @@ const deleteWidgetById = async (widgetId) => {
   } catch (err) {
     throw err;
   }
+
+
   // const brand = await getBrandById(brandId);
   // // console.log(brand)
 
@@ -180,10 +183,23 @@ const deleteWidgetById = async (widgetId) => {
   // return brand;
 };
 
+
+const updateWidgetStatus = async (widgetId, isActive) => {
+  try {
+    const home = await getWidgetById(widgetId);
+    home.is_active = isActive;
+    const result = await home.save();
+    return result;
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   saveHome,
   queryWidgets,
   getWidgetById,
   updateWidgetById,
   deleteWidgetById,
+  updateWidgetStatus
 };

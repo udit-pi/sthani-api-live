@@ -51,11 +51,39 @@ res.status(httpStatus.NO_CONTENT).json({'message': 'Brand deleted successfully'}
 });
 
   
+const validateAndImportBrands = catchAsync(async (req, res) => {
+  try {
+    if (req.files && req.files.file) {
+      const file = req.files.file;
+      const shouldImport = req.path.includes('import');
+
+      const results = await brandService.validateBrands(file);
+      const isValid = results.every(result => result.isValid);
+
+      if (!shouldImport) {
+        return res.status(200).json({ validationResults: results, isValid });
+      }
+
+      if (isValid) {
+        const importSummary = await brandService.importBrands(results);
+        return res.status(200).json({ importSummary });
+      } else {
+        return res.status(400).json({ validationResults: results, isValid });
+      }
+    } else {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+  } catch (error) {
+    console.error('Error during validation/import:', error);
+    return res.status(500).json({ message: 'Error during validation/import', error: error.message });
+  }
+});
 
 module.exports = {
     createBrand,
     getBrands,
     getBrand,
     updateBrand,
-    deleteBrand
+    deleteBrand,
+    validateAndImportBrands
 }
