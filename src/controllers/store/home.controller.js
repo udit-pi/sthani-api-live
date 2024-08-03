@@ -79,7 +79,8 @@ const getwidgets = catchAsync(async (req, res) => {
   // const customer = await Customer.findById(payload.sub)
 
   try {
-    const widgets = await Home.find().sort({ placement_id: 1 }).exec();
+    const widgets = await Home.find({ is_active: true }).sort({ placement_id: 1 }).exec();
+
     const result = await Promise.all(
       widgets?.map(async (widget) => {
         // slideshow
