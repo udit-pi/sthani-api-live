@@ -36,11 +36,11 @@ const formatProduct = (product) => {
       name: product.brand_id.name,
       logo: `${MEDIA_URL}${product.brand_id.logo}`
     },
-    categories: product.categories.map(category => ({
-      id: category._id,
-      name: category.name,
-      slug: category.slug,
-    })),
+    // categories: product.categories.map(category => ({
+    //   id: category._id,
+    //   name: category.name,
+    //   slug: category.slug,
+    // })),
     tags: product.productTags || [],
     variants: productVariants,
   };
