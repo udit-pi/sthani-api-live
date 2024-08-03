@@ -442,6 +442,12 @@ const deleteProductById = async (productId) => {
 };
 
 
+const getProductsByBrand = async (brandId) => {
+  const brandObjectId = mongoose.Types.ObjectId(brandId); // Convert brandId to ObjectId
+  return await Product.find({ brand_id: brandId });
+};
+
+
 const syncProductsWithIQ = async () => {
   // Fetch all products
   const allProducts = await Product.find({ published: true });
@@ -798,6 +804,6 @@ module.exports = {
   updateProductById,
   deleteProductById,
   syncProductsWithIQ,
-  
+  getProductsByBrand,
   validateAndImportProducts
 };

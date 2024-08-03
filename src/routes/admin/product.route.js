@@ -29,5 +29,8 @@ router
 router
   .route('/validate')
   .post(auth('manageProductsImport'), productController.validateAndImportProducts);
+
+router
+  .get('/brand/:brandId', productController.getProductsByBrand);
   
 module.exports = router;

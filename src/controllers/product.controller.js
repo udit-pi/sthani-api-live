@@ -14,7 +14,7 @@ const { uploadSingleFile, uploadMultipleMediaFiles } = require('../services/file
 const { createProductMedia } = require('./product_media.controller');
 const product_variantModel = require('../models/product_variant.model');
 const { syncProductsWithIQ } = require('../services/product.service');
-
+const mongoose = require('mongoose');
 const uploadFolder = process.env.UPLOAD_FOLDER || '/var/www/html/media';
 
 const property_ids = [];
@@ -231,6 +231,18 @@ const validateAndImportProducts = catchAsync(async (req, res) => {
     res.status(500).json({ message: 'Error during validation/import', error: error.message });
   }
 });
+
+
+const getProductsByBrand = catchAsync(async (req, res) => {
+  const { brandId } = req.params;
+  const products = await productService.getProductsByBrand(brandId);
+  //console.log("Products by Brand", products);
+  if (!products) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Products not found');
+  }
+  res.send(products);
+});
+
 module.exports = {
   createProduct,
   getProducts,
@@ -238,5 +250,6 @@ module.exports = {
   updateProduct,
   deleteProduct,
   syncProductsWithIQController,
-  validateAndImportProducts
+  validateAndImportProducts,
+  getProductsByBrand
 };
