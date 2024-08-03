@@ -20,5 +20,13 @@ router
   .patch(auth('manageBrands'),brandController.updateBrand)
   .delete(auth('manageBrands'), validate(brandValidation.deleteBrand), brandController.deleteBrand);
 
+router
+  .route('/validate')
+  .post(auth('manageBrands'), brandController.validateAndImportBrands);
+
+router
+  .route('/import')
+  .post(auth('manageBrands'), brandController.validateAndImportBrands);
+
 
 module.exports = router;

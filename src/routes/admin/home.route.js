@@ -19,4 +19,10 @@ router
   .get(auth('getWidgets'), homeController.getWidget)
   .patch(auth('manageHome'), validate(homeValidation.updateHome),homeController.updateHome)
   .delete(auth('manageHome'), validate(homeValidation.deleteWidget), homeController.deleteWidget);
+
+router
+  .route('/:widgetId/status')
+  .patch(auth('manageHome'), validate(homeValidation.updateStatus), homeController.updateWidgetStatus);
+
 module.exports = router;
+ 

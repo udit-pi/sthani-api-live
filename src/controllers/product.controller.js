@@ -1,4 +1,5 @@
 const httpStatus = require('http-status');
+const csv = require('csv-parser');
 const path = require('path');
 const fs = require('fs');
 const pick = require('../utils/pick');
@@ -112,7 +113,7 @@ const createProduct = catchAsync(async (req, res) => {
   try {
     // create new product
     const product = await productService.saveProduct(req.body, req);
-    
+
     if (product) {
       return res.status(201).json({ status: 201, message: 'Product created successfully!', product: product });
     } else {
@@ -154,10 +155,10 @@ const getProduct = catchAsync(async (req, res) => {
 
 const updateProduct = catchAsync(async (req, res) => {
 
-  
+
   try {
 
-    const product = await productService.saveProduct( req.body, req, req.params.productId);
+    const product = await productService.saveProduct(req.body, req, req.params.productId);
 
     if (product) {
       return res.status(200).json({ status: 200, message: 'Product updated successfully!' });
@@ -201,11 +202,41 @@ const syncProductsWithIQController = catchAsync(async (req, res) => {
 });
 
 
+const validateAndImportProducts = catchAsync(async (req, res) => {
+  try {
+    if (req.files && req.files.file) {
+      const file = req.files.file;
+      const shouldImport = req.path.includes('import');
+      
+      const results = await productService.validateAndImportProducts(file, shouldImport);
+      const isValid = results.every(result => result.isValid);
+      console.log("Results", results);
+      if (!shouldImport) {
+        res.status(200).json({ validationResults: results, isValid });
+      } else {
+        
+        res.status(200).json({ importResults: results });
+      }
+      
+      // Clean up the uploaded file after validation
+      const filePath = path.join(uploadFolder, Date.now() + '-' + file.originalFilename);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    } else {
+      res.status(400).json({ message: 'No file uploaded' });
+    }
+  } catch (error) {
+    console.error('Error during validation/import:', error);
+    res.status(500).json({ message: 'Error during validation/import', error: error.message });
+  }
+});
 module.exports = {
   createProduct,
   getProducts,
   getProduct,
   updateProduct,
   deleteProduct,
-  syncProductsWithIQController
+  syncProductsWithIQController,
+  validateAndImportProducts
 };

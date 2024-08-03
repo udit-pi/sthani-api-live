@@ -1,4 +1,5 @@
 const httpStatus = require('http-status');
+const csv = require('csv-parser');
 const fs = require('fs');
 const path = require('path');
 const { Category } = require('../models');
@@ -52,7 +53,7 @@ const createCategory = async (req) => {
 
 const queryCategories = async (filter, options) => {
   //   const categories = await Category.paginate(filter, options);
-  return Category.find();
+  return Category.find().sort({ updatedAt: -1 });
 };
 
 
@@ -174,6 +175,89 @@ const deleteCategoryById = async (categoryId) => {
   return category;
 };
 
+const validateAndImportCategories = async (file, shouldImport) => {
+  const results = [];
+  const categoryMap = new Map();
+
+  const fileName = Date.now() + '-' + file.originalFilename;
+  const filePath = path.join(uploadFolder, fileName);
+
+  const tempFilePath = file.filepath;
+
+  try {
+    await fs.promises.rename(tempFilePath, filePath);
+  } catch (error) {
+    console.error('Error moving file:', error);
+    throw error;
+  }
+
+  return new Promise((resolve, reject) => {
+    fs.createReadStream(filePath)
+      .pipe(csv())
+      .on('data', (data) => {
+        const cleanedData = {};
+        for (const key in data) {
+          const cleanedKey = key.replace(/^\uFEFF/, ''); // Remove any BOM character from the key
+          cleanedData[cleanedKey] = data[key];
+        }
+
+        console.log("Cleaned CSV Row Data:", cleanedData);
+
+        try {
+          const categoryBody = {
+            slug: cleanedData['Slug'],
+            name: cleanedData['Name'],
+            description: cleanedData['Description'],
+            icon: cleanedData['Icon'] || '',
+            is_featured: cleanedData['Is Featured'] === 'TRUE',
+            banner: cleanedData['Banner'] || '',
+            slide_show: cleanedData['Slideshow'] ? cleanedData['Slideshow'].split(', ') : [],
+            meta_title: cleanedData['Meta Title'] || '',
+            meta_description: cleanedData['Meta Description'] || '',
+            tag: cleanedData['Tag'] || '',
+            sort_order: parseInt(cleanedData['Sort Order'], 10) || 0,
+            parent_category: cleanedData['Parent Category'] || null,
+          };
+          console.log("CategoryBody", categoryBody);
+          categoryMap.set(cleanedData['Slug'], categoryBody);
+        } catch (error) {
+          console.error('Error processing data:', error);
+          results.push({ isValid: false, message: `Error processing data: ${error.message}`, data });
+        }
+      })
+      .on('end', async () => {
+        console.log("Finished reading CSV. Starting validation...");
+
+        for (const [slug, categoryBody] of categoryMap.entries()) {
+          try {
+            if (categoryBody.parent_category) {
+              const parentCategory = await Category.findOne({ slug: categoryBody.parent_category });
+              categoryBody.parent_category = parentCategory ? parentCategory.id : null;
+            }
+            
+            const category = new Category(categoryBody);
+            await category.validate();
+
+            if (shouldImport) {
+              await category.save();
+            }
+
+            results.push({ isValid: true, message: `Category "${slug}" is valid.`, data: categoryBody });
+          } catch (validationError) {
+            console.error(`Category ${slug} is invalid:`, validationError.message);
+            results.push({ isValid: false, message: `Category "${slug}" is invalid: ${validationError.message}`, data: categoryBody });
+          }
+        }
+
+        resolve(results);
+      })
+      .on('error', (error) => {
+        console.error('Error reading CSV file:', error);
+        reject(error);
+      });
+  });
+};
+
 
 module.exports = {
   createCategory,
@@ -181,5 +265,6 @@ module.exports = {
   getCategoryById,
   updateCategoryById,
   deleteCategoryById,
+  validateAndImportCategories
 
 };

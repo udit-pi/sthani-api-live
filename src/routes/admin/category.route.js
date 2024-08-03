@@ -16,4 +16,12 @@ router
   .patch(auth('manageCategories'),categoryController.updateCategory)
   .delete(auth('manageCategories'), validate(categoryValidation.deleteCategory), categoryController.deleteCategory);
 
+router
+  .route('/validate')
+  .post(auth('manageCategories'),  categoryController.validateAndImportCategories);
+
+router
+  .route('/import')
+  .post(auth('manageCategories'),  categoryController.validateAndImportCategories);
+
 module.exports = router;

@@ -10,14 +10,14 @@ const createHome = {
     items: Joi.array().items(
             Joi.object({
                image:  Joi.string().allow(''),
-               description: Joi.string().allow(''),
+               description: Joi.string().required(),
                tag: Joi.string().allow(''),
                brand: Joi.string().allow(''),
                destination: Joi.string().allow(''),
                id: Joi.string().custom(objectId),
-               slideShowBrand: Joi.string().custom(objectId),
-               category: Joi.string().custom(objectId),
-               product: Joi.string().custom(objectId),
+               slideShowBrand: Joi.string().custom(objectId).allow(''),
+               category: Joi.string().custom(objectId).allow(''),
+               product: Joi.string().custom(objectId).allow(''),
                products: Joi.array().items(
                 Joi.object({
                   label: Joi.string(),
@@ -29,6 +29,7 @@ const createHome = {
             .optional(),
               
         ),
+        is_active: Joi.boolean().optional(),
   }),
   allowUnknown: true
 };
@@ -43,14 +44,14 @@ const updateHome = {
     items: Joi.array().items(
             Joi.object({
                image:  Joi.string().allow(''),
-               description: Joi.string().allow(''),
+               description: Joi.string().required(),
                tag: Joi.string().allow(''),
                brand: Joi.string().allow(''),
                destination: Joi.string().allow(''),
                id: Joi.string().custom(objectId),
-               slideShowBrand: Joi.string().custom(objectId),
-               category: Joi.string().custom(objectId),
-               product: Joi.string().custom(objectId),
+              //  slideShowBrand: Joi.string().custom(objectId).allow(''),
+              //  category: Joi.string().custom(objectId).allow(''),
+              //  product: Joi.string().custom(objectId).allow(''),
                products: Joi.array().items(
                 Joi.object({
                   label: Joi.string(),
@@ -62,6 +63,7 @@ const updateHome = {
             .optional(),
               
         ),
+        is_active: Joi.boolean().optional(),
   }),
   allowUnknown: true
 };
@@ -72,10 +74,20 @@ const deleteWidget = {
   }),
 };
 
+const updateStatus = {
+  params: Joi.object().keys({
+    widgetId: Joi.string().custom(objectId).required(),
+  }),
+  body: Joi.object().keys({
+    is_active: Joi.boolean().required(),
+  }),
+};
+
 module.exports = {
   createHome,
   updateHome,
-  deleteWidget
+  deleteWidget,
+  updateStatus
  
 }
 

@@ -7,6 +7,7 @@ const router = express.Router();
 
 
 
+
 router
   .route('/')
   .post(auth('manageProducts'), validate(productValidation.createProduct), productController.createProduct)
@@ -20,4 +21,13 @@ router
 router
   .route('/sync-iq')
   .post(auth('manageSyncProducts'), productController.syncProductsWithIQController);
+
+  router
+  .route('/import')
+  .post(auth('manageProductsImport'), productController.validateAndImportProducts);
+
+router
+  .route('/validate')
+  .post(auth('manageProductsImport'), productController.validateAndImportProducts);
+  
 module.exports = router;

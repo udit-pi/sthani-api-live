@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
 const { User, Brand } = require('../models');
 const ApiError = require('../utils/ApiError');
+const csv = require('csv-parser');
 const path = require('path');
 const fs = require('fs');
 const { uploadSingleFile, uploadMultipleFile } = require('./fileUpload.service');
@@ -56,7 +57,7 @@ if(slide_show){
 
 const queryBrands = async (filter, options) => {
   // const brands = await Brand.paginate(filter, options);
-  const brands = await Brand.find({});
+  const brands = await Brand.find().sort({ updatedAt: -1 });
   return brands;
 };
 
@@ -311,10 +312,105 @@ const deleteBrandById = async (brandId) => {
   return brand;
 };
 
+const validateBrands = async (file) => {
+  const results = [];
+  const brandMap = new Map();
+
+  const fileName = Date.now() + '-' + file.originalFilename;
+  const filePath = path.join(uploadFolder, fileName);
+
+  console.log('File object:', file);
+
+  const tempFilePath = file.filepath;
+  console.log('Temporary File Path:', tempFilePath);
+
+  try {
+    await fs.promises.rename(tempFilePath, filePath);
+  } catch (error) {
+    console.error('Error moving file:', error);
+    throw error;
+  }
+
+  console.log("File Path ---- ", filePath);
+
+  return new Promise((resolve, reject) => {
+    fs.createReadStream(filePath)
+      .pipe(csv())
+      .on('data', (data) => {
+        try {
+          console.log("Processing row:", data);
+
+          if (!data['slug']) {
+            console.log("Skipping empty row");
+            return;
+          }
+
+          if (!brandMap.has(data['slug'])) {
+            const brandBody = {
+              name: data['name'] || '',
+              slug: data['slug'] || '',
+              description: data['description'] || '',
+              color: data['color'] || '#E21556',
+              logo: data['logo'] || '',
+              slide_show: data['slide_show'] ? data['slide_show'].split(', ') : [],
+              images: data['images'] ? data['images'].split(', ').map(image => ({ label: '', value: image })) : [],
+              website: data['website'] || '',
+              sort_order: data['sort_order'] || 0,
+            };
+
+            brandMap.set(data['slug'], brandBody);
+          }
+        } catch (error) {
+          console.error('Error processing data:', error);
+          results.push({ isValid: false, message: `Error processing data: ${error.message}`, data });
+        }
+      })
+      .on('end', async () => {
+        console.log("Finished reading CSV. Starting validation...");
+        for (const [slug, brandBody] of brandMap.entries()) {
+          try {
+            const brand = new Brand(brandBody);
+            await brand.validate();
+            console.log(`Brand ${slug} is valid.`);
+            results.push({ isValid: true, message: `Brand "${slug}" is valid.`, data: brandBody });
+          } catch (validationError) {
+            console.error(`Brand ${slug} is invalid:`, validationError.message);
+            results.push({ isValid: false, message: `Brand "${slug}" is invalid: ${validationError.message}`, data: brandBody });
+          }
+        }
+        resolve(results);
+      })
+      .on('error', (error) => {
+        console.error('Error reading CSV file:', error);
+        reject(error);
+      });
+  });
+};
+
+const importBrands = async (validatedResults) => {
+  const importSummary = [];
+  for (const result of validatedResults) {
+    if (result.isValid) {
+      try {
+        const brand = new Brand(result.data);
+        await brand.save();
+        importSummary.push({ isValid: true, message: `Brand "${result.data.slug}" imported successfully.`, data: result.data });
+      } catch (error) {
+        importSummary.push({ isValid: false, message: `Error importing brand "${result.data.slug}": ${error.message}`, data: result.data });
+      }
+    } else {
+      importSummary.push(result);
+    }
+  }
+  return importSummary;
+};
+
 module.exports = {
   createBrand,
   queryBrands,
   getBrandById,
   updateBrandById,
   deleteBrandById,
+  validateBrands,
+  importBrands
 };

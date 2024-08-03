@@ -81,6 +81,10 @@ const homeSchema = mongoose.Schema(
         },
       ],
     },
+    is_active: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

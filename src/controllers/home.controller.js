@@ -29,7 +29,7 @@ const updateHome = catchAsync(async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 })
-
+ 
 
 
 
@@ -66,7 +66,14 @@ await homeService.deleteWidgetById(req.params.widgetId);
 res.status(httpStatus.NO_CONTENT).json({'message': 'Widget deleted successfully'});
 });
 
-
+const updateWidgetStatus = catchAsync(async (req, res) => {
+  try {
+    const home = await homeService.updateWidgetStatus(req.params.widgetId, req.body.is_active);
+    res.status(httpStatus.OK).send(home);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
  
 
 module.exports = {
@@ -74,6 +81,7 @@ module.exports = {
     getwidgets,
     getWidget,
     updateHome,
-    deleteWidget
+    deleteWidget,
+    updateWidgetStatus
    
 }
