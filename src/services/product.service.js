@@ -144,6 +144,7 @@ async function handleFiles(files) {
 
 const saveProduct = async (productBody, req, productId = null) => {
   try {
+    
     const product = productId ? await Product.findById(productId).exec() : new Product();
     if (!product) {
       throw new Error('Product not found.');
@@ -163,12 +164,23 @@ const saveProduct = async (productBody, req, productId = null) => {
       product.media = productBody.media || [];
     }
 
+    // Handle description_short_image with extra checks
+    if (req.files.description_short_image && Object.keys(req.files.description_short_image).length !== 0 && typeof req.files.description_short_image === 'object') {
+      
+      const shortImage = uploadSingleFile(req.files.description_short_image);
+      
+      product.description_short_image = shortImage; // Save the file path or URL
+    } else {
+      product.description_short_image = productBody.description_short_image || ""; 
+    }
+
     // Assign all other properties
     const fields = [
       'brand_id',
       'sku',
       'name',
       'description_short',
+      'description_short_title',
       'description',
       'additional_descriptions',
       'weight',
@@ -749,7 +761,7 @@ const validateAndImportProducts = async (file, shouldImport) => {
           }
         } catch (error) {
           console.error('Error processing data:', error);
-          results.push({ isValid: false,  message: `Error processing data: ${error.message}`, data });
+          results.push({ isValid: false, message: `Error processing data: ${error.message}`, data });
         }
       })
       .on('end', async () => {
@@ -770,19 +782,19 @@ const validateAndImportProducts = async (file, shouldImport) => {
             const product = new Product(productBody);
             await product.validate();
             console.log(`Product ${slug} is valid.`);
-            
+
 
             if (shouldImport) {
-              await product.save(); 
+              await product.save();
             }
 
-            results.push({ isValid: true,  message: `Product "${slug}" is valid.`, data: productBody });
+            results.push({ isValid: true, message: `Product "${slug}" is valid.`, data: productBody });
 
           } catch (validationError) {
             validationPassed = false;
             console.error(`Product ${slug} is invalid:`, validationError.message);
-            results.push({ isValid: false,  message: `Product "${slug}" is invalid: ${validationError.message}`, data: productBody });
-            
+            results.push({ isValid: false, message: `Product "${slug}" is invalid: ${validationError.message}`, data: productBody });
+
           }
         }
 

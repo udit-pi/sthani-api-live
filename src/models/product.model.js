@@ -34,6 +34,17 @@ const productSchema = mongoose.Schema(
       required: false,
       trim: true,
     },
+    description_short_title: {
+      type: String,
+      required: false,
+      trim: true,
+    },
+    description_short_image: {
+      type: String,
+      required: false,
+      // trim: true,
+      default: '',
+    },
     description: {
       type: String,
       required: false,
