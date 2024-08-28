@@ -34,10 +34,13 @@ const getSearch = catchAsync(async (req, res) => {
 
     productData.forEach(product => {
         if (product.brand_id && !uniqueBrands.has(product.brand_id.id)) {
+            const coverImage = product.brand_id.images.find(img => img.label === 'cover');
+
             uniqueBrands.set(product.brand_id.id, {
                 id: product.brand_id.id,
                 name: product.brand_id.name,
-                logo: product.brand_id.logo ? `${MEDIA_URL}${product.brand_id.logo}` : null
+                logo: product.brand_id.logo ? `${MEDIA_URL}${product.brand_id.logo}` : null,
+                cover: coverImage ? `${MEDIA_URL}${coverImage.value}` : ""
             });
         }
     });
