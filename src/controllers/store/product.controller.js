@@ -224,6 +224,8 @@ const productVariants = product.product_variants && Array.isArray(product.produc
       Product_id: product._id,
       name: product.name,
       short_description: product.description_short,
+      short_description_title: product.description_short_title,
+      short_description_image: product.description_short_image ? `${MEDIA_URL}${product.description_short_image}` : "" ,
       image: productImages,
 
       brand: {
