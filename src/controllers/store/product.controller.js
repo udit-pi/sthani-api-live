@@ -304,7 +304,7 @@ function getProductBasic(product) {
   })) : [];
 
   return {
-    Product_id: product.id,
+    Product_id: product._id,
     name: product.name,
     short_description: product.description_short,
     image: productImages,
