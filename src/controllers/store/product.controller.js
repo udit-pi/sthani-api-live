@@ -310,10 +310,10 @@ function getProductBasic(product) {
     image: productImages,
 
     brand: {
-      brand_id: product.brand_id.id,
-      name: product.brand_id.name,
-      logo: `${MEDIA_URL}${product.brand_id.logo}`,
-      color: product.brand_id.color
+      brand_id: product.brand_id?.id,
+      name: product.brand_id?.name,
+      logo: `${MEDIA_URL}${product.brand_id?.logo}`,
+      color: product.brand_id?.color
 
     },
     price: {
