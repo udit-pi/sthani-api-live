@@ -289,6 +289,7 @@ const getProduct = catchAsync(async (req, res) => {
 
 
 function getProductBasic(product) {
+  //console.log("Product in Basic", product);
   const productImages = product.media ? product.media.map(filename => MEDIA_URL + filename) : [];
 
   const productVariants = product.product_variants && Array.isArray(product.product_variants) ? product.product_variants.map(variant => ({
@@ -303,7 +304,7 @@ function getProductBasic(product) {
   })) : [];
 
   return {
-    Product_id: product._id,
+    Product_id: product.id,
     name: product.name,
     short_description: product.description_short,
     image: productImages,
